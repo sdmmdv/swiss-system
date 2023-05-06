@@ -57,14 +57,14 @@ print([table_name[0] for table_name in table_names])
 #     print("Error details:", e.stderr)
 
 # Register players
-cmd = ['python3',
-       os.path.join(current_dir(), 'register-players.py'),
-       '--conn', conn_string]
+# cmd = ['python3',
+#        os.path.join(current_dir(), 'register-players.py'),
+#        '--conn', conn_string]
 
-try:
-    subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
-except subprocess.CalledProcessError as e:
-    print("Error details:", e.stderr)
+# try:
+#     subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
+# except subprocess.CalledProcessError as e:
+#     print("Error details:", e.stderr)
 
 # Close the cursor and database connection
 cur.close()
