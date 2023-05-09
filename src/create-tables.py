@@ -39,6 +39,7 @@ def create_results_table(conn):
 def create_standings_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
+            DROP TABLE Standings CASCADE;
             CREATE TABLE IF NOT EXISTS Standings (
                 id VARCHAR(25) REFERENCES Players(id),
                 name VARCHAR(255),
@@ -54,6 +55,23 @@ def create_standings_table(conn):
         conn.commit()
         print("Standings table created successfully")
 
+
+# Populate standings table based on players list and default values.
+def fill_standings_table(conn):
+    with conn.cursor() as cur:
+        # Select all the id and name values from the Players table
+        cur.execute("SELECT id, name FROM Players")
+
+        # Insert each row into the Standings table with the default values
+        for row in cur.fetchall():
+            cur.execute("""
+                INSERT INTO Standings (id, name, is_active, is_bye, tiebreaker_C, tiebreaker_B, tiebreaker_A, points)
+                VALUES (%s, %s, true, false, 0.00, 0.00, 0.00, 0.0)
+            """, row)
+
+        conn.commit()
+        print("Standings table filled successfully")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--conn', help='Database connection string', required=True)
@@ -62,8 +80,11 @@ def main():
 
     # Create the tables
     create_players_table(conn)
-    create_results_table(conn)
+    # create_results_table(conn)
     create_standings_table(conn)
+
+    # Fill the tables
+    fill_standings_table(conn)
 
 if __name__ == '__main__':
     main()
