@@ -9,7 +9,7 @@ def create_players_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Players (
-                id SERIAL PRIMARY KEY,
+                id VARCHAR(25) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL
             )
@@ -22,12 +22,13 @@ def create_results_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Results (
-                id SERIAL PRIMARY KEY,
-                player1_id INTEGER REFERENCES Players(id) NOT NULL,
-                player2_id INTEGER REFERENCES Players(id),
-                date_time TIMESTAMP NOT NULL,
-                player1_score INTEGER,
-                player2_score INTEGER,
+                round_id INTEGER PRIMARY KEY NOT NULL,
+                player1_id VARCHAR(25) REFERENCES Players(id) NOT NULL,
+                player1_name VARCHAR(255) NOT NULL,
+                player1_score DECIMAL(2,1) NOT NULL,
+                player2_score DECIMAL(2,1),
+                player2_name VARCHAR(255),
+                player2_id VARCHAR(25) REFERENCES Players(id),
                 CONSTRAINT one_result_per_player CHECK (player1_id != player2_id)
             )
         """)
@@ -39,11 +40,15 @@ def create_standings_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Standings (
-                player_id INTEGER REFERENCES Players(id),
-                wins INTEGER DEFAULT 0,
-                losses INTEGER DEFAULT 0,
-                draws INTEGER DEFAULT 0,
-                PRIMARY KEY (player_id)
+                id VARCHAR(25) REFERENCES Players(id),
+                name VARCHAR(255),
+                is_active BOOLEAN,
+                is_bye BOOLEAN,
+                tiebreaker_C DECIMAL(4,2),
+                tiebreaker_B DECIMAL(4,2),
+                tiebreaker_A DECIMAL(4,2),
+                points DECIMAL(2,1),
+                PRIMARY KEY (id)
             )
         """)
         conn.commit()

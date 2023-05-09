@@ -47,14 +47,14 @@ table_names = cur.fetchall()
 print([table_name[0] for table_name in table_names])
 
 # Create tables
-# cmd = ['python3',
-#        os.path.join(current_dir(), 'create-tables.py'),
-#        '--conn', conn_string]
+cmd = ['python3',
+       os.path.join(current_dir(), 'create-tables.py'),
+       '--conn', conn_string]
 
-# try:
-#     subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
-# except subprocess.CalledProcessError as e:
-#     print("Error details:", e.stderr)
+try:
+    subprocess.run(cmd, check=True, stderr=subprocess.PIPE)
+except subprocess.CalledProcessError as e:
+    print("Error details:", e.stderr)
 
 # Register players
 # cmd = ['python3',
