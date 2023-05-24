@@ -24,7 +24,7 @@ def create_results_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS Results (
-                round_id INTEGER PRIMARY KEY NOT NULL,
+                round_id INTEGER NOT NULL,
                 player1_id VARCHAR(25) REFERENCES Players(id) NOT NULL,
                 player1_name VARCHAR(255) NOT NULL,
                 player1_score DECIMAL(2,1) NOT NULL,
