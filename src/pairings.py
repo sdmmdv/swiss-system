@@ -187,8 +187,12 @@ if __name__ == '__main__':
     active_players = get_active_players(conn)
     # [print(player) for player in active_players]
 
-    pairs = swiss_pairing(conn, active_players)
-    [print(f'{pair[0]} - {pair[1]}') for pair in pairs]
+    raw_pairs = swiss_pairing(conn, active_players)
+
+    # Sort the raw_pairs list by the rank of the first element in each pair
+    sorted_pairs = sorted(raw_pairs, key=lambda pair: pair[0].rank)
+
+    [print(f'{pair[0]} - {pair[1]}') for pair in sorted_pairs]
 
     # Close database connection
     conn.close()
