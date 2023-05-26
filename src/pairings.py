@@ -3,11 +3,14 @@
 import psycopg2
 import argparse
 
+from player import Player
+
 # Get eligible list of players to pair for the next round
 def get_active_players(conn):
     with conn.cursor() as cur:
         cur.execute("SELECT rank, id, name, is_bye FROM standings WHERE is_active = true ORDER BY rank ASC")
-        players = cur.fetchall()
+        player_data = cur.fetchall()
+    players = [Player(*data) for data in player_data]
     return players
 
 # Given a player, get set of already played opponents
@@ -70,46 +73,57 @@ def swiss_pairing(conn, players):
 
     # Pair already rested players from the bottom going upwards
     for i in range(len(players) - 1, -1, -1):
-        rank, player_id, name, is_bye = players[i]
+        rank = players[i].rank
+        player_id = players[i].id
+        name = players[i].name
+        is_bye = players[i].is_bye
         
         if is_bye and player_id not in paired_players_set:
             left_hand_player = player_id
             paired_players_set.add(left_hand_player)
             
             for j in range(i - 1, -1, -1):
-                rank, opponent_id, opponent_name, is_opponent_bye = players[j]
+                opponent_id = players[j].id
+                opponent_name = players[j].name
+                is_opponent_bye = players[j].is_bye
                 
                 if not is_opponent_bye and opponent_id not in paired_players_set and \
                     not have_played_before(H2H_map, left_hand_player, opponent_id):
                     right_hand_player = opponent_id
                     paired_players_set.add(right_hand_player)
-                    pairing_list.append((left_hand_player, right_hand_player))
-                    print(f"{left_hand_player} {name} - {opponent_name} {right_hand_player}")
+                    pairing_list.append((players[i], players[j]))
+                    # print(f"{left_hand_player} {name} - {opponent_name} {right_hand_player}")
                     break
 
             # If no player found, pair going downwards the table
             else:
                 for j in range(i, len(players)):
-                    rank, opponent_id, opp_name, is_opponent_bye, _ = players[j]
+                    opponent_id = players[j].id
+                    opp_name = players[j].name
+                    is_opponent_bye = players[j].is_bye
                     
                     if not is_opponent_bye and opponent_id not in paired_players_set and \
                         not have_played_before(H2H_map, left_hand_player, opponent_id):
                         right_hand_player = opponent_id
                         paired_players_set.add(right_hand_player)
-                        pairing_list.append((left_hand_player, right_hand_player))
-                        print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
+                        pairing_list.append((players[i], players[j]))
+                        # print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
                         break
 
     # Pair leading players from up to bottom (by ranking)
     for i in range(len(players)):
-        rank, player_id, name, is_bye = players[i]
+        player_id = players[i].id
+        name = players[i].name
+        is_bye = players[i].is_bye
 
         if player_id not in paired_players_set:
             left_hand_player = player_id
             paired_players_set.add(left_hand_player)
 
             for j in range(i, len(players)):
-                rank, opponent_id, opp_name, is_opponent_bye = players[j]
+                opponent_id = players[j].id
+                opp_name = players[j].name
+                is_opponent_bye = players[j].is_bye
 
                 if opponent_id not in paired_players_set:
 
@@ -117,8 +131,8 @@ def swiss_pairing(conn, players):
 
                     if not have_played_before(H2H_map, left_hand_player, right_hand_player):
                         paired_players_set.add(right_hand_player)
-                        pairing_list.append((left_hand_player, right_hand_player))
-                        print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
+                        pairing_list.append((players[i], players[j]))
+                        # print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
                         break
 
                     # If about to match players matched before
@@ -128,32 +142,33 @@ def swiss_pairing(conn, players):
                     else:
 
                         for ind in range(len(pairing_list) - 1, -1, -1):
-                            id1, id2 = pairing_list[ind]
+                            # id1, id2 = pairing_list[ind]
+                            player1, player2 = pairing_list[ind]
+                            id1, id2 = player1.id, player2.id
                             
                             if not have_played_before(H2H_map, left_hand_player, id2) and \
                                 not have_played_before(H2H_map, id1, right_hand_player):
-                                pairing_list[ind] = (id1, right_hand_player)
-                                print(f"change {id1} - {right_hand_player}")
-                                pairing_list.append((left_hand_player, id2))
+                                pairing_list[ind] = (player1, players[j])
+                                # print(f"change {id1} - {right_hand_player}")
+                                pairing_list.append((players[i], player2))
                                 paired_players_set.add(right_hand_player)
                                 break
                             
                             elif not have_played_before(H2H_map, left_hand_player, id1) and \
                                 not have_played_before(H2H_map, right_hand_player, id2):
-                                pairing_list[ind] = (id1, left_hand_player)
-                                print(f"change {id1} - {left_hand_player}")
-                                pairing_list.append((right_hand_player, id2))
+                                pairing_list[ind] = (player1, players[i])
+                                # print(f"change {id1} - {left_hand_player}")
+                                pairing_list.append((players[j], player2))
                                 paired_players_set.add(right_hand_player)
                                 break                     
 
 
             else:
-                print(f"{left_hand_player} {name} - BYE")
+                # print(f"{left_hand_player} {name} - BYE")
+                pairing_list.append((players[i], 'BYE'))
                 break
-    
-    print("pair set: ", len(paired_players_set))
-    print("pair list: ", len(pairing_list))
 
+    return pairing_list
 
 if __name__ == '__main__':
     conn_string = "postgresql://postgres:postgres@localhost"
@@ -170,12 +185,10 @@ if __name__ == '__main__':
 
     
     active_players = get_active_players(conn)
-    # print(active_players)
-
-    H2H_map = create_head_to_head_map(conn)
-    print(H2H_map)
+    # [print(player) for player in active_players]
 
     pairs = swiss_pairing(conn, active_players)
+    [print(f'{pair[0]} - {pair[1]}') for pair in pairs]
 
     # Close database connection
     conn.close()
