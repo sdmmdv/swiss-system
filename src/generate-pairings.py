@@ -2,6 +2,8 @@
 
 import psycopg2
 import argparse
+from pathlib import Path
+import csv
 
 from player import Player
 
@@ -170,6 +172,31 @@ def swiss_pairing(conn, players):
 
     return pairing_list
 
+
+def generate_pairings_csv(sorted_pairs, round_id):
+    filename = root_dir() / "data" / "pairings.csv"
+
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["round_id", "player1_id", "player1_name", "player1_score", "player2_score", "player2_name", "player2_id"])
+
+        for pair in sorted_pairs:
+            player1 = pair[0]
+            player2 = pair[1]
+
+            if player2 == "BYE":
+                row = [round_id, player1.id, player1.name, "BYE", "_", "_", "_"]
+            else:
+                row = [round_id, player1.id, player1.name, "?", "?", player2.name, player2.id]
+
+            writer.writerow(row)
+
+    print(f"Pairings CSV file generated successfully: {filename}")
+
+def root_dir() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
 if __name__ == '__main__':
     conn_string = "postgresql://postgres:postgres@localhost"
 
@@ -178,6 +205,11 @@ if __name__ == '__main__':
     parser.add_argument('--conn', 
                         help='PostgreSQL connection string',
                         default=conn_string)
+    parser.add_argument("-r",
+                        "--round-id",
+                        type=int,
+                        required=True,
+                        help="Round ID")
     args = parser.parse_args()
 
     # Connect to the database
@@ -193,6 +225,8 @@ if __name__ == '__main__':
     sorted_pairs = sorted(raw_pairs, key=lambda pair: pair[0].rank)
 
     [print(f'{pair[0]} - {pair[1]}') for pair in sorted_pairs]
+
+    generate_pairings_csv(sorted_pairs, args.round_id)
 
     # Close database connection
     conn.close()
