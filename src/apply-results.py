@@ -68,9 +68,9 @@ def apply_buchholz_tiebreak(conn):
             # print(players)
 
             # Get average points of all players
-            cur.execute("SELECT AVG(points) AS average_points FROM standings")
-            result = cur.fetchone()
-            average_points = format(result[0], '.2f')
+            # cur.execute("SELECT AVG(points) AS average_points FROM standings")
+            # result = cur.fetchone()
+            # average_points = format(result[0], '.2f')
 
             # Update the Buchholz tie-breaker for each player
             for player in players:
@@ -98,9 +98,6 @@ def apply_buchholz_tiebreak(conn):
                 for data in opponent_data:
                     opponent_id = data[0]
                     opponent_point = data[1]
-                    # buchholz score of BYE opponent should be set to average of all players
-                    if opponent_id == '_':
-                        opponent_point = average_points
                     buchholz_score_sum += float(opponent_point)
 
                 try:
