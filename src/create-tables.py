@@ -43,7 +43,6 @@ def create_standings_table(conn):
         cur.execute("""
             DROP TABLE Standings CASCADE;
             CREATE TABLE IF NOT EXISTS Standings (
-                rank INT UNIQUE,
                 id VARCHAR(25) REFERENCES Players(id),
                 name VARCHAR(255),
                 is_active BOOLEAN,
@@ -66,36 +65,19 @@ def fill_standings_table(conn):
         cur.execute("SELECT id, name FROM Players")
         # Insert each row into the Standings table with the default values
         for row in cur.fetchall():
-            dn1 = generate_decimal_number()
-            dn2 = generate_decimal_number()
-            dn3 = generate_decimal_number()
-            p = generate_decimal_number()
-            print(dn1,dn2,dn3,p)
-            cur.execute("""
-                INSERT INTO Standings (id, name, is_active, is_bye, tiebreaker_C, tiebreaker_B, tiebreaker_A, points)
-                VALUES (%s, %s, true, false, %s, %s, %s, %s)
-            """, (row[0], row[1], dn1, dn2, dn3, p))
+            # dn1 = generate_decimal_number()
+            # dn2 = generate_decimal_number()
+            # dn3 = generate_decimal_number()
+            # p = generate_decimal_number()
+            # print(dn1,dn2,dn3,p)
+            if row[0] != '_':
+                cur.execute("""
+                    INSERT INTO Standings (id, name, is_active, is_bye, tiebreaker_C, tiebreaker_B, tiebreaker_A, points)
+                    VALUES (%s, %s, true, false, %s, %s, %s, %s)
+                """, (row[0], row[1], 0.00, 0.00, 0.00, 0.0))
 
         conn.commit()
         print("Standings table filled successfully")
-
-def update_standings_table(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            WITH ranked_standings AS (
-                SELECT
-                    id,
-                    ROW_NUMBER() OVER (ORDER BY points DESC, tiebreaker_A DESC, tiebreaker_B DESC, tiebreaker_C DESC) AS rank
-                FROM
-                    Standings
-            )
-            UPDATE Standings AS s
-            SET rank = rs.rank
-            FROM ranked_standings AS rs
-            WHERE s.id = rs.id;
-        """)
-        conn.commit()
-        print("Standings table updated successfully")
 
 
 def generate_decimal_number():
@@ -112,15 +94,14 @@ def main():
     conn = psycopg2.connect(args.conn)
 
     # Create the tables
-    create_players_table(conn)
     # create_results_table(conn)
+    # create_players_table(conn)
     create_standings_table(conn)
 
     # Fill the tables
     fill_standings_table(conn)
 
     # create_results_table(conn)
-    update_standings_table(conn)
 
 if __name__ == '__main__':
     main()

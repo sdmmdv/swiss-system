@@ -10,9 +10,9 @@ from player import Player
 # Get eligible list of players to pair for the next round
 def get_active_players(conn):
     with conn.cursor() as cur:
-        cur.execute("SELECT rank, id, name, is_bye FROM standings WHERE is_active = true ORDER BY rank ASC")
+        cur.execute("SELECT id, name, is_bye FROM standings WHERE is_active = true")
         player_data = cur.fetchall()
-    players = [Player(*data) for data in player_data]
+    players = [Player(rank + 1, *data) for rank, data in enumerate(player_data)]
     return players
 
 # Given a player, get set of already played opponents
