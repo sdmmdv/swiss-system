@@ -94,7 +94,7 @@ def main():
     conn = psycopg2.connect(args.conn)
 
     # Create the tables
-    # create_results_table(conn)
+    create_results_table(conn)
     # create_players_table(conn)
     create_standings_table(conn)
 

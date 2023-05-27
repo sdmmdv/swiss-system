@@ -1,52 +1,52 @@
 round_id,player1_id,player1_name,player1_score,player2_score,player2_name,player2_id
-1,85861,Anthony Harris,1,0,Joseph Donaldson,08945
-1,43973,Hannah Phillips,0.5,0.5,John Burton,81150
-1,83892,Jennifer Reilly PhD,0.5,0.5,Stephanie Brennan,64069
-1,12285,William Barnett,0.5,0.5,Lindsay Farley,06398
-1,47851,Patricia Cross,0.5,0.5,Lauren Marshall,74076
-1,63976,Adrian Benson,0.5,0.5,Mark Schneider,88708
-1,10179,David Rodriguez DVM,0.5,0.5,Stacy Murphy,05335
-1,63381,Jon Smith,0.5,0.5,Briana Nguyen,33749
-1,90383,Carlos Perez Jr.,0.5,0.5,Barbara Wade PhD,84823
-1,71004,Jesse Martinez,0.5,0.5,Tina Miller,67028
-1,90675,James Herring,0.5,0.5,Amanda Lee,71761
-1,96387,Bailey Rogers,0.5,0.5,Michele Cortez,45487
-1,72557,Misty Fowler,0.5,0.5,Stacey Kim,26758
-1,71469,Jacob Hodge,0.5,0.5,Patrick Brown,17353
-1,57237,Nicole Smith,0.5,0.5,Linda Wright,07818
-1,47902,Stephanie Villanueva,0.5,0.5,Jessica Dixon,90795
-1,57405,Ernest Stokes,1,0,Mr. Andrew Lawson DVM,52547
-1,34958,Kendra Aguirre DDS,0.5,0.5,Regina Martinez,07756
-1,25844,Mary Lindsey,0.5,0.5,Timothy Rivera,50304
-1,33438,Mary Harrison,0.5,0.5,Jennifer Garcia,36741
-1,10654,Joseph Roberts,0.5,0.5,Christine Harvey,33055
-1,08853,Wendy Anderson,0.5,0.5,Edgar Huynh,61330
-1,00439,Vanessa Fleming,0.5,0.5,David Perez,21836
-1,86244,Terry Wright,0.5,0.5,Kezban Jokic,11234
-1,45634,Terry Anderson,0.5,0.5,Matthew Gray,32970
-1,72889,Daniel Jackson,0.5,0.5,Carol Mcgee,20063
-1,55175,Brenda Moore,0.5,0.5,Ronald Griffin,56787
-1,75359,Robert Kelly,0.5,0.5,Kenneth Jenkins,27378
-1,13441,Daniel Johnson,0.5,0.5,Mark Bean,98331
-1,53541,Diana Bowen,0,1,Sarah Whitaker,73778
-1,71654,Cory Carr,0.5,0.5,Rebecca Torres,86066
-1,79277,Megan Wong,0.5,0.5,Kevin Hamilton,09221
-1,87763,Megan Gonzalez,0.5,0.5,Ethan Jenkins,76056
-1,47478,Hayley Taylor,0.5,0.5,Jeanette Vasquez DDS,11625
-1,34540,Lindsay Davis,0.5,0.5,Nicole Owens,06085
-1,50206,Lisa Wright,0.5,0.5,William Duffy,77368
-1,12131,Pamela Smith,0.5,0.5,Melissa Smith,96096
-1,49693,Tina Rogers,0.5,0.5,Scott Grant,38621
-1,88080,Vanessa Delgado,0.5,0.5,Katherine Blackburn,82767
-1,78235,Megan Williams,0.5,0.5,Kathryn Cook,56075
-1,36935,Jared Sloan,0.5,0.5,Debra Griffin,74784
-1,15145,Tracy Acevedo,0.5,0.5,Catherine Johnson,05689
-1,89744,Justin Valdez,0.5,0.5,Jason Reed,69348
-1,54851,Jonathan Roberts,0.5,0.5,John Cross,24659
-1,10482,Jacqueline Hampton,0.5,0.5,Arthur Walker,41867
-1,74393,Jesse Flores,0.5,0.5,Justin Doyle,63523
-1,58023,James Stark,0.5,0.5,Rebecca Morrison,22127
-1,73087,Danielle Willis,0.5,0.5,Sarah Ortega,62480
-1,92494,Tyler Diaz,0.5,0.5,Rachel Castillo,20635
+1,85861,Anthony Harris,1.0,1.0,Joseph Donaldson,08945
+1,43973,Hannah Phillips,0.5,1.5,John Burton,81150
+1,83892,Jennifer Reilly PhD,0.0,2.0,Stephanie Brennan,64069
+1,12285,William Barnett,1.5,0.5,Lindsay Farley,06398
+1,47851,Patricia Cross,2.0,0.0,Lauren Marshall,74076
+1,63976,Adrian Benson,0.5,1.5,Mark Schneider,88708
+1,10179,David Rodriguez DVM,1.0,1.0,Stacy Murphy,05335
+1,63381,Jon Smith,1.5,0.5,Briana Nguyen,33749
+1,90383,Carlos Perez Jr.,0.0,2.0,Barbara Wade PhD,84823
+1,71004,Jesse Martinez,2.0,0.0,Tina Miller,67028
+1,90675,James Herring,1.0,1.0,Amanda Lee,71761
+1,96387,Bailey Rogers,0.5,1.5,Michele Cortez,45487
+1,72557,Misty Fowler,1.0,1.0,Stacey Kim,26758
+1,71469,Jacob Hodge,1.5,0.5,Patrick Brown,17353
+1,57237,Nicole Smith,1.0,1.0,Linda Wright,07818
+1,47902,Stephanie Villanueva,1.5,0.5,Jessica Dixon,90795
+1,57405,Ernest Stokes,2.0,0.0,Mr. Andrew Lawson DVM,52547
+1,34958,Kendra Aguirre DDS,1.5,0.5,Regina Martinez,07756
+1,25844,Mary Lindsey,1.0,1.0,Timothy Rivera,50304
+1,33438,Mary Harrison,1.5,0.5,Jennifer Garcia,36741
+1,10654,Joseph Roberts,1.0,1.0,Christine Harvey,33055
+1,08853,Wendy Anderson,1.5,0.5,Edgar Huynh,61330
+1,00439,Vanessa Fleming,1.0,1.0,David Perez,21836
+1,86244,Terry Wright,1.5,0.5,Kezban Jokic,11234
+1,45634,Terry Anderson,1.0,1.0,Matthew Gray,32970
+1,72889,Daniel Jackson,1.5,0.5,Carol Mcgee,20063
+1,55175,Brenda Moore,1.0,1.0,Ronald Griffin,56787
+1,75359,Robert Kelly,1.5,0.5,Kenneth Jenkins,27378
+1,13441,Daniel Johnson,1.0,1.0,Mark Bean,98331
+1,53541,Diana Bowen,0.0,2.0,Sarah Whitaker,73778
+1,71654,Cory Carr,1.5,0.5,Rebecca Torres,86066
+1,79277,Megan Wong,1.0,1.0,Kevin Hamilton,09221
+1,87763,Megan Gonzalez,1.5,0.5,Ethan Jenkins,76056
+1,47478,Hayley Taylor,1.0,1.0,Jeanette Vasquez DDS,11625
+1,34540,Lindsay Davis,1.5,0.5,Nicole Owens,06085
+1,50206,Lisa Wright,1.0,1.0,William Duffy,77368
+1,12131,Pamela Smith,1.5,0.5,Melissa Smith,96096
+1,49693,Tina Rogers,1.0,1.0,Scott Grant,38621
+1,88080,Vanessa Delgado,1.5,0.5,Katherine Blackburn,82767
+1,78235,Megan Williams,1.0,1.0,Kathryn Cook,56075
+1,36935,Jared Sloan,1.5,0.5,Debra Griffin,74784
+1,15145,Tracy Acevedo,1.0,1.0,Catherine Johnson,05689
+1,89744,Justin Valdez,1.5,0.5,Jason Reed,69348
+1,54851,Jonathan Roberts,1.0,1.0,John Cross,24659
+1,10482,Jacqueline Hampton,1.5,0.5,Arthur Walker,41867
+1,74393,Jesse Flores,1.0,1.0,Justin Doyle,63523
+1,58023,James Stark,1.5,0.5,Rebecca Morrison,22127
+1,73087,Danielle Willis,1.0,1.0,Sarah Ortega,62480
+1,92494,Tyler Diaz,1.5,0.5,Rachel Castillo,20635
 1,32424,Michael Santiago Jr.,BYE,_,_,_
-1,92633,Scott Bray,0.5,0.5,Mitchell Odom,26901
+1,92633,Scott Bray,1.0,1.0,Mitchell Odom,26901

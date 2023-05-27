@@ -7,10 +7,15 @@ import csv
 
 from player import Player
 
-# Get eligible list of players to pair for the next round
+# Get eligible list of players in order of rankings to pair for the next round
 def get_active_players(conn):
     with conn.cursor() as cur:
-        cur.execute("SELECT id, name, is_bye FROM standings WHERE is_active = true")
+        cur.execute("""
+            SELECT id, name, is_bye
+            FROM Standings
+            WHERE is_active = true
+            ORDER BY points DESC, tiebreaker_A DESC, tiebreaker_B DESC, tiebreaker_C DESC;
+        """)
         player_data = cur.fetchall()
     players = [Player(rank + 1, *data) for rank, data in enumerate(player_data)]
     return players
