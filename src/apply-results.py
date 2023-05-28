@@ -76,7 +76,7 @@ def apply_buchholz_tiebreak(conn):
             for player in players:
                 player_id = player[0]
                 cur.execute("""
-                    SELECT 
+                    SELECT DISTINCT
                         CASE 
                             WHEN player1_id = %s THEN player2_id
                             WHEN player2_id = %s THEN player1_id
@@ -97,7 +97,7 @@ def apply_buchholz_tiebreak(conn):
                 buchholz_score_sum = 0
                 for data in opponent_data:
                     opponent_id = data[0]
-                    opponent_point = data[1]
+                    opponent_point = convert_to_match_score(data[1])
                     buchholz_score_sum += float(opponent_point)
 
                 try:

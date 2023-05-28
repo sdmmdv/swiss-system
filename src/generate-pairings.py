@@ -80,7 +80,6 @@ def swiss_pairing(conn, players):
 
     # Pair already rested players from the bottom going upwards
     for i in range(len(players) - 1, -1, -1):
-        rank = players[i].rank
         player_id = players[i].id
         name = players[i].name
         is_bye = players[i].is_bye
@@ -141,6 +140,11 @@ def swiss_pairing(conn, players):
                         pairing_list.append((players[i], players[j]))
                         # print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
                         break
+                    
+                    # continue iteration unless it reached to the end of the standings
+                    elif j < len(players) - 1:
+                        continue
+
 
                     # If about to match players matched before
                     # Iterate over the list(from end to front of list)
@@ -168,8 +172,6 @@ def swiss_pairing(conn, players):
                                 pairing_list.append((players[j], player2))
                                 paired_players_set.add(right_hand_player)
                                 break                     
-
-
             else:
                 # print(f"{left_hand_player} {name} - BYE")
                 pairing_list.append((players[i], 'BYE'))
@@ -229,7 +231,7 @@ if __name__ == '__main__':
     # Sort the raw_pairs list by the rank of the first element in each pair
     sorted_pairs = sorted(raw_pairs, key=lambda pair: pair[0].rank)
 
-    [print(f'{pair[0]} - {pair[1]}') for pair in sorted_pairs]
+    # [print(f'{pair[0]} - {pair[1]}') for pair in raw_pairs]
 
     generate_pairings_csv(sorted_pairs, args.round_id)
 
