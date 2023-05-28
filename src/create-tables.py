@@ -47,6 +47,7 @@ def create_standings_table(conn):
                 name VARCHAR(255),
                 is_active BOOLEAN,
                 is_bye BOOLEAN,
+                matches INTEGER NOT NULL,
                 tiebreaker_C DECIMAL(4,2),
                 tiebreaker_B DECIMAL(4,2),
                 tiebreaker_A DECIMAL(4,2),
@@ -72,9 +73,9 @@ def fill_standings_table(conn):
             # print(dn1,dn2,dn3,p)
             if row[0] != '_':
                 cur.execute("""
-                    INSERT INTO Standings (id, name, is_active, is_bye, tiebreaker_C, tiebreaker_B, tiebreaker_A, points)
-                    VALUES (%s, %s, true, false, %s, %s, %s, %s)
-                """, (row[0], row[1], 0.00, 0.00, 0.00, 0.0))
+                    INSERT INTO Standings (id, name, is_active, is_bye, matches, tiebreaker_C, tiebreaker_B, tiebreaker_A, points)
+                    VALUES (%s, %s, true, false, %s, %s, %s, %s, %s)
+                """, (row[0], row[1], 0, 0.00, 0.00, 0.00, 0.0))
 
         conn.commit()
         print("Standings table filled successfully")

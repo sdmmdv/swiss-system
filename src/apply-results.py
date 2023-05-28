@@ -32,6 +32,9 @@ def apply_scores_to_standings(conn, round_id):
                 player1_match_score = convert_to_match_score(player1_score)
                 player2_match_score = convert_to_match_score(player2_score)
 
+                # Update number of matches played
+                cur.execute("UPDATE standings SET matches = matches + 1 WHERE id IN (%s, %s)", (player1_id, player2_id))
+
                 # Update player1's total game score tiebraker in standings table
                 cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (player1_score, player1_id))
 
@@ -47,7 +50,7 @@ def apply_scores_to_standings(conn, round_id):
                     cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player2_match_score, player2_id))
                 else:
                     # Store is_bye to standings
-                    cur.execute("UPDATE standings SET is_bye = 'true' WHERE id = %s", (player1_id,))
+                    cur.execute(f"UPDATE standings SET is_bye = 'true' WHERE id = '{player1_id}'")
 
             # Commit the changes to the database
             conn.commit()
