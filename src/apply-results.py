@@ -36,7 +36,7 @@ def apply_scores_to_standings(conn, round_id):
                 cur.execute("UPDATE standings SET matches = matches + 1 WHERE id IN (%s, %s)", (player1_id, player2_id))
 
                 # Update player1's total game score tiebraker in standings table
-                cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (player1_score, player1_id))
+                cur.execute("UPDATE standings SET tiebreaker_a = tiebreaker_a + %s WHERE id = %s", (player1_score, player1_id))
 
                 # Update player1's score in standings table
                 cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player1_match_score, player1_id))
@@ -44,7 +44,7 @@ def apply_scores_to_standings(conn, round_id):
                 # Check if player2_id are empty
                 if player2_id != '_':
                     # Update player2's total game score tiebraker in standings table
-                    cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (player2_score, player2_id))
+                    cur.execute("UPDATE standings SET tiebreaker_a = tiebreaker_a + %s WHERE id = %s", (player2_score, player2_id))
 
                     # Update player2's score in standings table
                     cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player2_match_score, player2_id))
@@ -78,6 +78,7 @@ def apply_buchholz_tiebreak(conn):
             # Update the Buchholz tie-breaker for each player
             for player in players:
                 player_id = player[0]
+                player_name = player[1]
                 cur.execute("""
                     SELECT DISTINCT
                         CASE 
@@ -95,13 +96,21 @@ def apply_buchholz_tiebreak(conn):
                 # Fetch all the opponent results
                 opponent_data = cur.fetchall()
 
+                opponent_ids = [result[0] for result in opponent_data]
+                # print(opponent_ids)
+
+                cur.execute("""
+                    SELECT COALESCE(SUM(points), 0) FROM standings WHERE id = ANY(%s);
+                """, (opponent_ids,))
+
+                buchholz_score_sum = cur.fetchone()[0]
+
+                # print(player_id, player_name, opponent_data, buchholz_score_sum)
+
                 # opponent_ids = [result[0] for result in opponent_data]
                 # opponent_points = [result[1] for result in opponent_data]
-                buchholz_score_sum = 0
-                for data in opponent_data:
-                    opponent_id = data[0]
-                    opponent_point = convert_to_match_score(data[1])
-                    buchholz_score_sum += float(opponent_point)
+                # buchholz_score_sum = sum(points for _, points in opponent_data)
+                # print(player_id, player_name, opponent_data, buchholz_score_sum)
 
                 try:
                     cur.execute("UPDATE standings SET tiebreaker_b = %s WHERE id = %s", (buchholz_score_sum, player_id))

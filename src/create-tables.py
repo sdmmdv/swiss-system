@@ -41,7 +41,6 @@ def create_results_table(conn):
 def create_standings_table(conn):
     with conn.cursor() as cur:
         cur.execute("""
-            DROP TABLE Standings CASCADE;
             CREATE TABLE IF NOT EXISTS Standings (
                 id VARCHAR(25) REFERENCES Players(id),
                 name VARCHAR(255),
@@ -94,10 +93,11 @@ def main():
     args = parser.parse_args()
     conn = psycopg2.connect(args.conn)
 
-    # Create the tables
-    create_results_table(conn)
     # create_players_table(conn)
-    create_standings_table(conn)
+    # # Create the tables
+    # create_results_table(conn)
+    # # create_players_table(conn)
+    # create_standings_table(conn)
 
     # Fill the tables
     fill_standings_table(conn)

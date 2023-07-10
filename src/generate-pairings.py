@@ -182,7 +182,7 @@ def swiss_pairing(conn, players):
 
 def generate_pairings_csv(sorted_pairs, round_id):
     filename = root_dir() / "data" / "pairings.csv"
-
+    f = open(root_dir() / "data" / "pairings-display.txt", 'w')
     with open(filename, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["round_id", "player1_id", "player1_name", "player1_score", "player2_score", "player2_name", "player2_id"])
@@ -195,9 +195,12 @@ def generate_pairings_csv(sorted_pairs, round_id):
                 row = [round_id, player1.id, player1.name, "BYE", "_", "_", "_"]
             else:
                 row = [round_id, player1.id, player1.name, "?", "?", player2.name, player2.id]
+                row_display = f'{player1.name} ?  -  ? {player2.name}\n'
 
             writer.writerow(row)
-
+            f.write(row_display)
+        
+    f.close()
     print(f"Pairings CSV file generated successfully: {filename}")
 
 def root_dir() -> Path:

@@ -49,14 +49,14 @@ def store_results(input_file, conn):
                         conn.rollback()
                         sys.exit(1)
 
-                    try:
-                        if player1_score + player2_score != 2.0:
-                            msg = 'Sum of player scores must be 2.0'
-                            raise ValueError(msg)
-                    except ValueError:
-                        print(f'Invalid sum of players! {msg}\n{row_output}')
-                        conn.rollback()
-                        sys.exit(1)
+                    # try:
+                    #     if player1_score + player2_score != 2.0:
+                    #         msg = 'Sum of player scores must be 2.0'
+                    #         raise ValueError(msg)
+                    # except ValueError:
+                    #     print(f'Invalid sum of players! {msg}\n{row_output}')
+                    #     conn.rollback()
+                    #     sys.exit(1)
 
                 cur.execute("INSERT INTO results (round_id, player1_id, player1_name, player1_score, player2_score, player2_name, player2_id) "
                             "VALUES (%s, %s, %s, %s, %s, %s, %s)",

@@ -2,6 +2,7 @@
 import psycopg2
 import argparse
 import sys
+import pandas as pd
 
 def print_standings(conn):
     cur = conn.cursor()
@@ -11,6 +12,8 @@ def print_standings(conn):
       name, matches, tiebreaker_B AS t2, tiebreaker_A as t1, points
     FROM
       Standings
+    WHERE
+      is_active = 'true'
     ORDER BY
       points DESC, tiebreaker_A DESC, tiebreaker_B DESC, tiebreaker_C DESC;
     """
@@ -19,12 +22,16 @@ def print_standings(conn):
     standings = cur.fetchall()
 
     # Print the results in PostgreSQL format
-    print(" rank |         name          | matches |  t2  |  t1  | points")
-    print("------+-----------------------+---------+------+------+--------")
+    print(" rank |         name              | matches |  t2  |  t1  | points")
+    print("------+---------------------------+---------+------+------+--------")
     for row in standings:
-        print("{:5d} | {:21s} | {:7d} | {:.2f} | {:.2f} | {:6.1f}".format(row[0], row[1], row[2], row[3], row[4], row[5]))
+        print("{:5d} | {:25s} | {:7d} | {:.2f} | {:.2f} | {:6.1f}".format(row[0], row[1], row[2], row[3], row[4], row[5]))
     
     cur.close()
+
+    # Convert the query results to a pandas DataFrame
+    df = pd.DataFrame(standings, columns=['rank', 'name', 'matches', 't2', 't1', 'points'])
+    df.to_excel('output.xlsx', index=False)
 
 def print_players(conn):
     cur = conn.cursor()
