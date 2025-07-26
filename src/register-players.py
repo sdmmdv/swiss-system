@@ -4,37 +4,57 @@ import csv
 import psycopg2
 from pathlib import Path
 import argparse
+import subprocess
+import os
 
-def root_dir() -> Path:
-    return Path(__file__).resolve().parent.parent
+def root_dir():
+    try:
+        root = subprocess.check_output(['git', 'rev-parse',
+                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
+        return root.decode('utf-8').strip()
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Must be running inside git repository!")
 
 def register_players(conn, csv_file):
-    # Open CSV file for reading
-    with open(csv_file, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-
-        # Connect to the database
+    try:
         with conn.cursor() as cur:
-            # Loop over each row in the CSV file
-            for row in reader:
-                # Insert row into database
-                cur.execute("INSERT INTO players (id, name, email) VALUES (%s, %s, %s)",
-                            (row['id'], row['name'], row['email']))
+            with open(csv_file, newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
 
-        # Commit changes to the database
+                for row in reader:
+                    cur.execute("""
+                        INSERT INTO players (id, name, email) 
+                        VALUES (%s, %s, %s)
+                    """, (row['id'], row['name'], row['email']))
+
         conn.commit()
+        print("All players registered successfully.")
+    except Exception as err:
+        conn.rollback()
+        print("An unexpected error occurred. Rolled back all changes.")
+        print(f"Reason: {err}")
 
 if __name__ == '__main__':
-    conn_string = "postgresql://postgres:postgres@localhost"
+    dbname=os.getenv("DB_NAME")
+    user=os.getenv("DB_USER")
+    password=os.getenv("DB_PASS")
+    host=os.getenv("DB_HOST", "localhost")
+    port=os.getenv("DB_PORT", "5432")
+    
+    required_vars = [dbname, user, password, host, port]
+    if not all(required_vars):
+        raise ValueError("One or more required environment variables are missing.")
 
+    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    
     # Parse command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conn', 
+    parser.add_argument('--conn',
                         help='PostgreSQL connection string',
                         default=conn_string)
     parser.add_argument('--csv-file',
                         help='CSV file containing player data',
-                        default=root_dir() / 'data/players.csv')
+                        default=os.path.join(root_dir(), 'data/players.csv'))
     args = parser.parse_args()
 
     # Connect to the database

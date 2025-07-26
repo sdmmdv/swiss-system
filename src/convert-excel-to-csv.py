@@ -5,8 +5,14 @@ import pandas as pd
 import argparse
 import os
 
-def root_dir() -> Path:
-    return Path(__file__).resolve().parent.parent
+def root_dir():
+    try:
+        root = subprocess.check_output(['git', 'rev-parse',
+                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
+        return root.decode('utf-8').strip()
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Must be running inside git repository!")
+
 
 def convert_to_csv(input_file, output_file):
     # Load the Excel file using pandas

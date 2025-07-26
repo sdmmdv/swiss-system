@@ -4,6 +4,8 @@ import psycopg2
 import argparse
 from pathlib import Path
 import csv
+import subprocess
+import os
 
 from player import Player
 
@@ -179,11 +181,21 @@ def swiss_pairing(conn, players):
 
     return pairing_list
 
+def root_dir():
+    try:
+        root = subprocess.check_output(['git', 'rev-parse',
+                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
+        return root.decode('utf-8').strip()
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Must be running inside git repository!")
 
 def generate_pairings_csv(sorted_pairs, round_id):
-    filename = root_dir() / "data" / "pairings.csv"
-    f = open(root_dir() / "data" / "pairings-display.txt", 'w')
-    with open(filename, 'w', newline='') as file:
+    filename = os.path.join(root_dir(), 'data', 'pairings.csv')
+    filename_display = os.path.join(root_dir(), 'data', 'pairings-display.txt')
+
+    os.makedirs(os.path.dirname(filename), exist_ok=True)  # ensure data/ dir exists
+
+    with open(filename, 'w', newline='') as file, open(filename_display, 'w') as f:
         writer = csv.writer(file)
         writer.writerow(["round_id", "player1_id", "player1_name", "player1_score", "player2_score", "player2_name", "player2_id"])
 
@@ -193,22 +205,29 @@ def generate_pairings_csv(sorted_pairs, round_id):
 
             if player2 == "BYE":
                 row = [round_id, player1.id, player1.name, "BYE", "_", "_", "_"]
+                row_display = f"{player1.name} has a BYE\n"
             else:
                 row = [round_id, player1.id, player1.name, "?", "?", player2.name, player2.id]
                 row_display = f'{player1.name} ?  -  ? {player2.name}\n'
 
             writer.writerow(row)
             f.write(row_display)
-        
-    f.close()
-    print(f"Pairings CSV file generated successfully: {filename}")
 
-def root_dir() -> Path:
-    return Path(__file__).resolve().parent.parent
+    print(f"Pairings CSV file generated successfully: {filename}")
 
 
 if __name__ == '__main__':
-    conn_string = "postgresql://postgres:postgres@localhost"
+    dbname=os.getenv("DB_NAME")
+    user=os.getenv("DB_USER")
+    password=os.getenv("DB_PASS")
+    host=os.getenv("DB_HOST", "localhost")
+    port=os.getenv("DB_PORT", "5432")
+    
+    required_vars = [dbname, user, password, host, port]
+    if not all(required_vars):
+        raise ValueError("One or more required environment variables are missing.")
+
+    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
