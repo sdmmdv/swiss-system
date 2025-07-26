@@ -1,0 +1,33 @@
+round_id,player1_id,player1_name,player1_score,player2_score,player2_name,player2_id
+1,user034,Jacob Powell,?,?,Aria Stewart,user027
+1,user003,Michael Davis,?,?,Luna Hughes,user025
+1,user020,Elijah Moore,?,?,Logan Green,user014
+1,user018,Benjamin Hill,?,?,Aubrey Price,user043
+1,user030,Jack Gray,?,?,Victoria Butler,user041
+1,user012,Mason King,?,?,Evelyn Perez,user023
+1,user040,Samuel Ross,?,?,Charlotte Nelson,user017
+1,user059,Natalie Rivera,?,?,Matthew Hayes,user032
+1,user033,Nora Foster,?,?,Scarlett Ward,user029
+1,user058,Gabriel Murphy,?,?,David Sanders,user042
+1,user036,Leo Perry,?,?,Chloe Bell,user039
+1,user057,Zoe Rogers,?,?,Anthony Wood,user060
+1,user013,Sophia Scott,?,?,Henry Cox,user028
+1,user002,Emily Carter,?,?,Alexander Rogers,user026
+1,user024,William Rivera,?,?,Grace Diaz,user031
+1,user007,Emma Thomas,?,?,Lillian Ramirez,user055
+1,user011,Isabella Wright,?,?,Julian Cooper,user056
+1,user006,Liam Johnson,?,?,Jack Gray,user030
+1,user008,Ethan Lewis,?,?,Penelope Reed,user047
+1,user015,Mia Adams,?,?,Owen Brooks,user044
+1,user010,Noah Walker,?,?,Amelia Morris,user019
+1,user001,John Smith,?,?,Samuel Ross,user040
+1,user038,Aiden Simmons,?,?,Lucas Baker,user016
+1,user037,Ella Patterson,?,?,Daniel Evans,user005
+1,user009,Ava Hall,?,?,Nathan Coleman,user048
+1,user052,Caleb Torres,?,?,Isabella Wright,user011
+1,user035,Zoey Jenkins,?,?,Riley Barnes,user045
+1,user005,Daniel Evans,?,?,Caleb Torres,user052
+1,user050,Dylan Richardson,?,?,Mason King,user012
+1,user004,Olivia Taylor,?,?,Zoe Rogers,user057
+1,user053,Hannah Peterson,?,?,Layla Howard,user049
+1,user024,William Rivera,BYE,_,_,_
