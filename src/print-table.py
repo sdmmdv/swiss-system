@@ -2,6 +2,7 @@
 import psycopg2
 import argparse
 import sys
+import os
 import pandas as pd
 
 def print_standings(conn):
@@ -55,7 +56,17 @@ def print_results(conn):
 
 
 if __name__ == '__main__':
-    conn_string = "postgresql://postgres:postgres@localhost"
+    dbname=os.getenv("DB_NAME")
+    user=os.getenv("DB_USER")
+    password=os.getenv("DB_PASS")
+    host=os.getenv("DB_HOST", "localhost")
+    port=os.getenv("DB_PORT", "5432")
+    
+    required_vars = [dbname, user, password, host, port]
+    if not all(required_vars):
+        raise ValueError("One or more required environment variables are missing.")
+
+    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
