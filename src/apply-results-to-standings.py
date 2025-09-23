@@ -3,14 +3,7 @@
 import psycopg2
 import argparse
 import sys
-
-def convert_to_match_score(player_score):
-    match_score = 0.0
-    if player_score == 2.0 or player_score == 1.5:
-        match_score = 1.0
-    elif player_score == 1.0:
-        match_score = 0.5
-    return match_score
+import os
 
 def apply_scores_to_standings(conn, round_id):
     try:
@@ -29,25 +22,16 @@ def apply_scores_to_standings(conn, round_id):
                 player2_score = result[4]
                 player2_id = result[6]
 
-                player1_match_score = convert_to_match_score(player1_score)
-                player2_match_score = convert_to_match_score(player2_score)
-
                 # Update number of matches played
                 cur.execute("UPDATE standings SET matches = matches + 1 WHERE id IN (%s, %s)", (player1_id, player2_id))
 
-                # Update player1's total game score tiebraker in standings table
-                cur.execute("UPDATE standings SET tiebreaker_a = tiebreaker_a + %s WHERE id = %s", (player1_score, player1_id))
-
                 # Update player1's score in standings table
-                cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player1_match_score, player1_id))
+                cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player1_score, player1_id))
 
                 # Check if player2_id are empty
                 if player2_id != '_':
-                    # Update player2's total game score tiebraker in standings table
-                    cur.execute("UPDATE standings SET tiebreaker_a = tiebreaker_a + %s WHERE id = %s", (player2_score, player2_id))
-
                     # Update player2's score in standings table
-                    cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player2_match_score, player2_id))
+                    cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player2_score, player2_id))
                 else:
                     # Store is_bye to standings
                     cur.execute(f"UPDATE standings SET is_bye = 'true' WHERE id = '{player1_id}'")
@@ -113,7 +97,7 @@ def apply_buchholz_tiebreak(conn):
                 # print(player_id, player_name, opponent_data, buchholz_score_sum)
 
                 try:
-                    cur.execute("UPDATE standings SET tiebreaker_b = %s WHERE id = %s", (buchholz_score_sum, player_id))
+                    cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (buchholz_score_sum, player_id))
                 except psycopg2.Error as e:
                     conn.rollback()
                     print(f"Error: {str(e)}")
@@ -128,7 +112,17 @@ def apply_buchholz_tiebreak(conn):
         sys.exit(1)
 
 if __name__ == '__main__':
-    conn_string = "postgresql://postgres:postgres@localhost"
+    dbname=os.getenv("DB_NAME")
+    user=os.getenv("DB_USER")
+    password=os.getenv("DB_PASS")
+    host=os.getenv("DB_HOST", "localhost")
+    port=os.getenv("DB_PORT", "5432")
+    
+    required_vars = [dbname, user, password, host, port]
+    if not all(required_vars):
+        raise ValueError("One or more required environment variables are missing.")
+
+    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
