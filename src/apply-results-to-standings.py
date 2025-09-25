@@ -14,6 +14,13 @@ def apply_scores_to_standings(conn, round_id):
             if not results:
                 raise ValueError(f"Round ID {round_id} does not exist in the table")
 
+            #Make sure to not apply duplicate rounds
+            cur.execute("SELECT MAX(matches) FROM standings;")
+            max_matches = cur.fetchone()[0] or 0
+            if not (round_id > max_matches):
+                raise ValueError(f"Round {round_id} already applied (matches = {max_matches})")
+
+
             # Apply the scores to the standings table
             for result in results:
                 round_id = result[0]
