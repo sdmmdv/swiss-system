@@ -94,7 +94,7 @@ def main():
                         default=conn_string)
     parser.add_argument('-f',
                         '--input-file',
-                        default=root_dir() / 'data/results.csv',
+                        required=True,
                         help=f'Results csv input file (default: %(default)s)')
     args = parser.parse_args()
 

@@ -190,7 +190,7 @@ def root_dir():
         raise RuntimeError("Must be running inside git repository!")
 
 def generate_pairings_csv(sorted_pairs, round_id):
-    filename = os.path.join(root_dir(), 'data', 'pairings.csv')
+    filename = os.path.join(root_dir(), 'data', f'pairings_r{round_id}.csv')
     filename_display = os.path.join(root_dir(), 'data', 'pairings-display.txt')
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)  # ensure data/ dir exists
