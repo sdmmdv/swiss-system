@@ -10,7 +10,32 @@ import sys
 def root_dir() -> Path:
     return Path(__file__).resolve().parent.parent
 
+def get_max_round_id(conn) -> int:
+    """Return the maximum round_id from results table (0 if empty)."""
+    with conn.cursor() as cur:
+        cur.execute("SELECT COALESCE(MAX(round_id), 0) FROM results;")
+        return cur.fetchone()[0]
+
+def check_inputs(conn, round_id, player1_id, player1_name, player2_name, player2_id, max_round_id):
+    with conn.cursor() as cur:
+        # --- Guard 2: Check player identities ---
+        cur.execute("SELECT 1 FROM standings WHERE id = %s AND name = %s;",
+                    (player1_id, player1_name))
+        if not cur.fetchone():
+            raise ValueError(f"Player mismatch: {player1_id} - {player1_name} not found in standings.")
+
+        cur.execute("SELECT 1 FROM standings WHERE id = %s AND name = %s;",
+                    (player2_id, player2_name))
+        if not cur.fetchone():
+            raise ValueError(f"Player mismatch: {player2_id} - {player2_name} not found in standings.")
+
+        if round_id != max_round_id + 1:
+            raise ValueError(
+                f"Invalid round {round_id}: next allowed round is {max_round_id + 1}."
+            )    
+
 def store_results(input_file, conn):
+    max_round_id = get_max_round_id(conn)
     cur = None
     try:
         cur = conn.cursor()
@@ -58,6 +83,8 @@ def store_results(input_file, conn):
                         print(f'Invalid sum of players! {msg}\n{row_output}')
                         conn.rollback()
                         sys.exit(1)
+                
+                check_inputs(conn, round_id, player1_id, player1_name, player2_name, player2_id, max_round_id)
 
                 cur.execute("INSERT INTO results (round_id, player1_id, player1_name, player1_score, player2_score, player2_name, player2_id) "
                             "VALUES (%s, %s, %s, %s, %s, %s, %s)",

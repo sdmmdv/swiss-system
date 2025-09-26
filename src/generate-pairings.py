@@ -22,6 +22,30 @@ def get_active_players(conn):
     players = [Player(rank + 1, *data) for rank, data in enumerate(player_data)]
     return players
 
+def validate_new_round(conn, round_id: int):
+    """
+    Validate that the given round_id is valid:
+    - Cannot be less than max round already in results.
+    - Must be exactly +1 greater than the current max round.
+    """
+    with conn.cursor() as cur:
+        cur.execute("SELECT COALESCE(MAX(round_id), 0) FROM results;")
+        max_round_id = cur.fetchone()[0]
+
+    if round_id <= max_round_id:
+        raise ValueError(
+            f"Invalid round {round_id}: must be greater than last applied round {max_round_id}."
+        )
+
+    if round_id != max_round_id + 1:
+        raise ValueError(
+            f"Invalid round {round_id}: Last round was {max_round_id}, next round must be {max_round_id + 1}!"
+        )
+
+    print(f"Round {round_id} is valid (previous max round = {max_round_id})")
+    return True
+
+
 # Given a player, get set of already played opponents
 # useful function, but calling it every time will drain time resources
 def fetch_played_opponents(conn, player_id):
@@ -243,8 +267,9 @@ if __name__ == '__main__':
 
     # Connect to the database
     conn = psycopg2.connect(args.conn)
-
     
+    validate_new_round(conn, args.round_id)
+
     active_players = get_active_players(conn)
     # [print(player) for player in active_players]
 
