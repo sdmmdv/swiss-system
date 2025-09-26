@@ -6,6 +6,7 @@ from pathlib import Path
 import csv
 import subprocess
 import os
+import math
 
 from player import Player
 
@@ -22,12 +23,18 @@ def get_active_players(conn):
     players = [Player(rank + 1, *data) for rank, data in enumerate(player_data)]
     return players
 
-def validate_new_round(conn, round_id: int):
+def validate_new_round(conn, tourney_type, max_round_count, round_id: int):
     """
     Validate that the given round_id is valid:
+    - Cannot be less than maximum set by tournament type.
     - Cannot be less than max round already in results.
     - Must be exactly +1 greater than the current max round.
     """
+    if round_id > max_round_count:
+        raise ValueError(
+            f"Invalid round {round_id}! {tourney_type} tournament is limited to maximum {max_round_count} rounds ."
+        )
+ 
     with conn.cursor() as cur:
         cur.execute("SELECT COALESCE(MAX(round_id), 0) FROM results;")
         max_round_id = cur.fetchone()[0]
@@ -239,6 +246,33 @@ def generate_pairings_csv(sorted_pairs, round_id):
 
     print(f"Pairings CSV file generated successfully: {filename}")
 
+def get_player_count(conn) -> int:
+    """
+    Count the number of players in the standings table.
+    """
+    with conn.cursor() as cur:
+        cur.execute("SELECT COUNT(id) FROM standings;")
+        num_players = cur.fetchone()[0] or 0
+    return num_players
+
+
+def get_max_rounds(num_players: int, system: str = "swiss") -> int:
+    """
+    Calculate maximum number of rounds for a tournament.
+    
+    system = "swiss"  → ceil(log2(N))
+    system = "roundrobin" → N - 1
+    """
+    if num_players < 2:
+        return 0
+
+    if system == "roundrobin":
+        return num_players - 1
+    elif system == "swiss":
+        return math.ceil(math.log2(num_players))
+    else:
+        raise ValueError("Unknown system: choose 'swiss' or 'roundrobin'")
+
 
 if __name__ == '__main__':
     dbname=os.getenv("DB_NAME")
@@ -263,12 +297,22 @@ if __name__ == '__main__':
                         type=int,
                         required=True,
                         help="Round ID")
+    parser.add_argument("-t", "--type",
+                        type=str,
+                        choices=["roundrobin", "swiss"],
+                        default="roundrobin",
+                        help="Tournament type (default: roundrobin)"
+    )
     args = parser.parse_args()
 
     # Connect to the database
     conn = psycopg2.connect(args.conn)
-    
-    validate_new_round(conn, args.round_id)
+
+    player_count = get_player_count(conn)
+
+    max_rounds = get_max_rounds(player_count, args.type)
+
+    validate_new_round(conn, args.type, max_rounds, args.round_id)
 
     active_players = get_active_players(conn)
     # [print(player) for player in active_players]
