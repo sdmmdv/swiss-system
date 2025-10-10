@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
+import subprocess
 import argparse
 import os
 
@@ -25,10 +26,10 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--input',
-                        default=root_dir() / 'data/input.xlsx',
+                        default=os.path.join(root_dir(), 'data/input.xlsx'),
                         help=f'Input Excel file (default: %(default)s)')
     parser.add_argument('--output',
-                        default=root_dir() / 'data/output.csv',
+                        default=os.path.join(root_dir(), 'data/output.csv'),
                         help=f'Output CSV file (default: %(default)s)')
     args = parser.parse_args()
 
