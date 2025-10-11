@@ -5,6 +5,8 @@ import argparse
 import sys
 import os
 
+from common.db_utils import get_connection_string
+
 def apply_scores_to_standings(conn, round_id):
     try:
         with conn.cursor() as cur:
@@ -118,18 +120,8 @@ def apply_buchholz_tiebreak(conn):
         print(f"Error: {str(e)}")
         sys.exit(1)
 
-if __name__ == '__main__':
-    dbname=os.getenv("DB_NAME")
-    user=os.getenv("DB_USER")
-    password=os.getenv("DB_PASS")
-    host=os.getenv("DB_HOST", "localhost")
-    port=os.getenv("DB_PORT", "5432")
-    
-    required_vars = [dbname, user, password, host, port]
-    if not all(required_vars):
-        raise ValueError("One or more required environment variables are missing.")
-
-    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+if __name__ == '__main__':    
+    conn_string = get_connection_string()
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()

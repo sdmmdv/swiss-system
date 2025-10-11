@@ -11,16 +11,22 @@ and converting reports.
 import argparse
 import subprocess
 import sys
+import os
 from pathlib import Path
 
-# Path to the src directory containing all scripts
-BASE_DIR = Path(__file__).resolve().parent
+# --- Ensure project root is on sys.path ---
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
+SRC = os.path.join(ROOT, "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
 
-def run_script(script_name, *args):
-    """Run one of the existing scripts via subprocess."""
-    script_path = BASE_DIR / script_name
-    cmd = [sys.executable, str(script_path)] + list(args)
-    subprocess.run(cmd, check=True)
+
+def run_script(script_rel_path, *args):
+    """Run a sub-script with correct Python environment."""
+    env = os.environ.copy()
+    env["PYTHONPATH"] = SRC + os.pathsep + env.get("PYTHONPATH", "")
+    script_path = os.path.join(SRC, script_rel_path)
+    subprocess.run([sys.executable, script_path, *args], check=True, env=env)
 
 
 def main():
@@ -29,51 +35,39 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # 1. Initialize DB
+    # --- Command definitions ---
+
     subparsers.add_parser("init-db", help="Initialize the tournament database")
-
-    # 2. Generate players
     subparsers.add_parser("generate-players", help="Generate list of players")
-
-    # 3. Register players
     subparsers.add_parser("register-players", help="Register players into the database")
 
-    # 4. Generate pairings
     p = subparsers.add_parser("generate-pairings", help="Generate match pairings")
     p.add_argument("-r", "--round-id", required=True, help="Round ID")
     p.add_argument("-t", "--type", choices=["roundrobin", "swiss"], default="swiss", help="Pairing type")
 
-    # 5. Register standings
     subparsers.add_parser("register-standings", help="Register tournament standings")
 
-    # 6. Populate results
     p = subparsers.add_parser("populate-results", help="Populate results from a file")
     p.add_argument("-f", "--file", required=True, help="CSV file with results")
 
-    # 7. Register results
     p = subparsers.add_parser("register-results", help="Register results into DB")
     p.add_argument("-f", "--input-file", required=True, help="Results input CSV file")
     p.add_argument("--conn", help="PostgreSQL connection string")
 
-    # 8. Print table
     p = subparsers.add_parser("print-table", help="Print tournament tables")
     p.add_argument("-t", "--table", choices=["standings", "results", "players"], required=True)
     p.add_argument("--conn", help="PostgreSQL connection string")
 
-    # 9. Apply results to standings
     p = subparsers.add_parser("apply-results", help="Apply results to standings for a given round")
     p.add_argument("-r", "--round-id", required=True)
     p.add_argument("--conn", help="PostgreSQL connection string")
 
-    # 10. Convert Excel → CSV
     p = subparsers.add_parser("convert-excel-to-csv", help="Convert Excel file to CSV format")
     p.add_argument("--input", default="data/input.xlsx", help="Path to input Excel file")
     p.add_argument("--output", default="data/output.csv", help="Path to output CSV file")
 
-    # 11. Convert table → Excel
     subparsers.add_parser("convert-table-to-excel", help="Convert DB tables to Excel format")
 
-    # (Optional) Developer/test scripts
     test_parser = subparsers.add_parser("test", help="Run internal test scripts")
     test_parser.add_argument(
         "name",
@@ -81,55 +75,58 @@ def main():
         help="Test script name (e.g., test_pairings)"
     )
 
+    # --- Parse args ---
     args, unknown = parser.parse_known_args()
-
     cmd = args.command
 
     try:
+        # --- Core scripts ---
         if cmd == "init-db":
-            run_script("init_db.py", *unknown)
+            run_script("core/init_db.py", *unknown)
 
         elif cmd == "generate-players":
-            run_script("generate-players.py", *unknown)
+            run_script("core/generate-players.py", *unknown)
 
         elif cmd == "register-players":
-            run_script("register-players.py", *unknown)
+            run_script("core/register-players.py", *unknown)
 
         elif cmd == "generate-pairings":
-            run_script("generate-pairings.py", "-r", args.round_id, "-t", args.type, *unknown)
+            run_script("core/generate-pairings.py", "-r", args.round_id, "-t", args.type, *unknown)
 
         elif cmd == "register-standings":
-            run_script("register-standings.py", *unknown)
+            run_script("core/register-standings.py", *unknown)
 
         elif cmd == "populate-results":
-            run_script("populate-results.py", "-f", args.file, *unknown)
+            run_script("utils/populate-results.py", "-f", args.file, *unknown)
 
         elif cmd == "register-results":
             cmd_args = ["-f", args.input_file]
             if args.conn:
                 cmd_args += ["--conn", args.conn]
-            run_script("register-results.py", *cmd_args, *unknown)
-
-        elif cmd == "print-table":
-            cmd_args = ["-t", args.table]
-            if args.conn:
-                cmd_args += ["--conn", args.conn]
-            run_script("print-table.py", *cmd_args, *unknown)
+            run_script("core/register-results.py", *cmd_args, *unknown)
 
         elif cmd == "apply-results":
             cmd_args = ["-r", args.round_id]
             if args.conn:
                 cmd_args += ["--conn", args.conn]
-            run_script("apply-results-to-standings.py", *cmd_args, *unknown)
+            run_script("core/apply-results-to-standings.py", *cmd_args, *unknown)
+
+        # --- Utility scripts ---
+        elif cmd == "print-table":
+            cmd_args = ["-t", args.table]
+            if args.conn:
+                cmd_args += ["--conn", args.conn]
+            run_script("utils/print-table.py", *cmd_args, *unknown)
 
         elif cmd == "convert-excel-to-csv":
-            run_script("convert-excel-to-csv.py", "--input", args.input, "--output", args.output, *unknown)
+            run_script("utils/convert-excel-to-csv.py", "--input", args.input, "--output", args.output, *unknown)
 
         elif cmd == "convert-table-to-excel":
-            run_script("convert-table-to-excel.py", *unknown)
+            run_script("utils/convert-table-to-excel.py", *unknown)
 
+        # --- Test scripts ---
         elif cmd == "test":
-            run_script(f"test_script{args.name[-1]}", *unknown)
+            run_script(f"test/{args.name}.py", *unknown)
 
         else:
             parser.print_help()
@@ -137,6 +134,7 @@ def main():
     except subprocess.CalledProcessError as e:
         print(f"Command failed: {e}", file=sys.stderr)
         sys.exit(e.returncode)
+
 
 
 if __name__ == "__main__":

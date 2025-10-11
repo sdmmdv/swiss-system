@@ -4,6 +4,8 @@ import os
 import psycopg2
 import subprocess
 
+from common.db_utils import get_connection_string
+
 def get_root():
     try:
         root = subprocess.check_output(['git', 'rev-parse',

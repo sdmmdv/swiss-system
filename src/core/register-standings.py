@@ -6,6 +6,8 @@ import random
 import time
 import os
 
+from common.db_utils import get_connection_string
+
 # Populate standings table based on players list and default values.
 def fill_standings_table(conn):
     with conn.cursor() as cur:

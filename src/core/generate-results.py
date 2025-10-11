@@ -5,6 +5,8 @@ import random
 from pathlib import Path
 import subprocess
 
+from common.db_utils import get_connection_string
+
 def root_dir():
     try:
         root = subprocess.check_output(['git', 'rev-parse',

@@ -7,6 +7,8 @@ import argparse
 import subprocess
 import os
 
+from common.db_utils import get_connection_string
+
 def root_dir():
     try:
         root = subprocess.check_output(['git', 'rev-parse',
@@ -35,17 +37,7 @@ def register_players(conn, csv_file):
         print(f"Reason: {err}")
 
 if __name__ == '__main__':
-    dbname=os.getenv("DB_NAME")
-    user=os.getenv("DB_USER")
-    password=os.getenv("DB_PASS")
-    host=os.getenv("DB_HOST", "localhost")
-    port=os.getenv("DB_PORT", "5432")
-    
-    required_vars = [dbname, user, password, host, port]
-    if not all(required_vars):
-        raise ValueError("One or more required environment variables are missing.")
-
-    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    conn_string = get_connection_string()
     
     # Parse command line arguments
     parser = argparse.ArgumentParser()
