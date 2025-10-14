@@ -13,8 +13,15 @@ import subprocess
 import sys
 import os
 from pathlib import Path
-from common.logger import get_logger
 
+
+# Parse only --verbose early (before imports)
+if "--verbose" in sys.argv:
+    os.environ["LOG_LEVEL"] = "DEBUG"
+else:
+    os.environ["LOG_LEVEL"] = "INFO"
+
+from common.logger import get_logger
 logger = get_logger(__name__)
 
 # --- Ensure project root is on sys.path ---
