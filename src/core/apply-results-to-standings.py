@@ -6,6 +6,9 @@ import sys
 import os
 
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 def apply_scores_to_standings(conn, round_id):
     try:
@@ -47,11 +50,11 @@ def apply_scores_to_standings(conn, round_id):
 
             # Commit the changes to the database
             conn.commit()
-            print("Record applied successfully")
+            logger.info("Record applied successfully")
 
     except psycopg2.Error as e:
         conn.rollback()
-        print(f"Error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         sys.exit(1)
 
 
@@ -109,15 +112,15 @@ def apply_buchholz_tiebreak(conn):
                     cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (buchholz_score_sum, player_id))
                 except psycopg2.Error as e:
                     conn.rollback()
-                    print(f"Error: {str(e)}")
+                    logger.error(f"Error: {str(e)}")
                     sys.exit(1)
             # Commit the changes to the database
             conn.commit()
-            print("Buchholz applied successfully")
+            logger.info("Buchholz applied successfully")
 
     except psycopg2.Error as e:
         conn.rollback()
-        print(f"Error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         sys.exit(1)
 
 if __name__ == '__main__':    

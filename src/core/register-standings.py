@@ -7,6 +7,9 @@ import time
 import os
 
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Populate standings table based on players list and default values.
 def fill_standings_table(conn):
@@ -27,7 +30,7 @@ def fill_standings_table(conn):
                 """, (row[0], row[1], 0, 0.00, 0.00, 0.00, 0.0))
 
         conn.commit()
-        print("Standings table filled successfully")
+        logger.info("Standings table filled successfully")
 
 
 def generate_decimal_number():

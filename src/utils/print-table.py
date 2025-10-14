@@ -7,6 +7,7 @@ import pandas as pd
 
 from common.db_utils import get_connection_string
 
+
 def print_standings(conn):
     cur = conn.cursor()
     query = """

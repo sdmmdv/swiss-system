@@ -13,6 +13,9 @@ import subprocess
 import sys
 import os
 from pathlib import Path
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 # --- Ensure project root is on sys.path ---
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
@@ -33,6 +36,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Swiss System Tournament Manager CLI"
     )
+    parser.add_argument("--verbose", "-v",
+                        action="store_true",
+                        help="Enable verbose logging")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # --- Command definitions ---
@@ -78,6 +84,9 @@ def main():
     # --- Parse args ---
     args, unknown = parser.parse_known_args()
     cmd = args.command
+    
+    # Ignore --verbose if already present
+    unknown = [u for u in unknown if u not in ("--verbose", "-v")]
 
     try:
         # --- Core scripts ---
@@ -131,9 +140,17 @@ def main():
         else:
             parser.print_help()
 
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed: {e}", file=sys.stderr)
-        sys.exit(e.returncode)
+    except subprocess.CalledProcessError as err:
+        logger.error("Subcommand failed: %s", err)
+        sys.exit(err.returncode)
+    except FileNotFoundError as err:
+        logger.error("Script not found: %s", err)
+        sys.exit(1)
+    except Exception as err:
+        logger.error("Unexpected error occurred! %s", err)
+        sys.exit(1)
+
+
 
 
 

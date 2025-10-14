@@ -10,6 +10,9 @@ import math
 
 from player import Player
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Get eligible list of players in order of rankings to pair for the next round
 def get_active_players(conn):
@@ -50,7 +53,7 @@ def validate_new_round(conn, tourney_type, max_round_count, round_id: int):
             f"Invalid round {round_id}: Last round was {max_round_id}, next round must be {max_round_id + 1}!"
         )
 
-    print(f"Round {round_id} is valid (previous max round = {max_round_id})")
+    logger.info(f"Round {round_id} is valid (previous max round = {max_round_id})")
     return True
 
 
@@ -245,7 +248,7 @@ def generate_pairings_csv(sorted_pairs, round_id):
             writer.writerow(row)
             f.write(row_display)
 
-    print(f"Pairings CSV file generated successfully: {filename}")
+    logger.info(f"Pairings CSV file generated successfully: {filename}")
 
 def get_player_count(conn) -> int:
     """

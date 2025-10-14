@@ -5,6 +5,10 @@ import random
 import argparse
 import os
 
+from common.logger import get_logger
+
+logger = get_logger(__name__)
+
 # Possible results
 RESULTS = [
     ("1.0", "0.0"),  # player1 wins
@@ -36,7 +40,7 @@ def replace_results(filename: str) -> None:
         writer = csv.writer(outfile)
         writer.writerows(rows)
 
-    print(f"Results written to {output_file}")
+    logger.info(f"Results written to {output_file}")
 
 
 def main():

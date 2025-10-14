@@ -8,6 +8,9 @@ import os
 import sys
 
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 def root_dir() -> Path:
     return Path(__file__).resolve().parent.parent
@@ -64,7 +67,7 @@ def store_results(input_file, conn):
                         if player1_score not in [0.5, 0.0, 1.0]:
                             raise ValueError('Invalid player1_score')
                     except ValueError:
-                        print(f'Invalid player2_score: {player1_score}\n{row_output}')                       
+                        logger.error(f'Invalid player2_score: {player1_score}\n{row_output}')                       
                         conn.rollback()
                         sys.exit(1)
 
@@ -73,7 +76,7 @@ def store_results(input_file, conn):
                         if player2_score not in [0.5, 0.0, 1.0]:
                             raise ValueError('Invalid player2_score')
                     except ValueError:
-                        print(f'Invalid player2_score: {player2_score}\n{row_output}')
+                        logger.error(f'Invalid player2_score: {player2_score}\n{row_output}')
                         conn.rollback()
                         sys.exit(1)
 
@@ -82,7 +85,7 @@ def store_results(input_file, conn):
                             msg = 'Sum of player scores must be 1.0'
                             raise ValueError(msg)
                     except ValueError:
-                        print(f'Invalid sum of players! {msg}\n{row_output}')
+                        logger.error(f'Invalid sum of players! {msg}\n{row_output}')
                         conn.rollback()
                         sys.exit(1)
                 
@@ -92,12 +95,12 @@ def store_results(input_file, conn):
                             "VALUES (%s, %s, %s, %s, %s, %s, %s)",
                             (round_id, player1_id, player1_name, player1_score, player2_score, player2_name, player2_id))
 
-        print("Results stored successfully.")
+        logger.info("Results stored successfully.")
         conn.commit()
     except (psycopg2.Error, FileNotFoundError) as e:
         if conn is not None:
             conn.rollback()
-        print(f"Error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
     finally:
         if cur is not None:
             cur.close()

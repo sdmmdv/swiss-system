@@ -6,6 +6,10 @@ from pathlib import Path
 import subprocess
 import os
 
+from common.logger import get_logger
+
+logger = get_logger(__name__)
+
 fake = Faker()
 
 

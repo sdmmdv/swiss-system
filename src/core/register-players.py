@@ -8,6 +8,9 @@ import subprocess
 import os
 
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 def root_dir():
     try:
@@ -30,11 +33,11 @@ def register_players(conn, csv_file):
                     """, (row['id'], row['name'], row['email']))
 
         conn.commit()
-        print("All players registered successfully.")
+        logger.info("All players registered successfully.")
     except Exception as err:
         conn.rollback()
-        print("An unexpected error occurred. Rolled back all changes.")
-        print(f"Reason: {err}")
+        logger.error("An unexpected error occurred. Rolled back all changes.")
+        logger.error(f"Reason: {err}")
 
 if __name__ == '__main__':
     conn_string = get_connection_string()

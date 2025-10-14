@@ -5,6 +5,9 @@ import psycopg2
 import subprocess
 
 from common.db_utils import get_connection_string
+from common.logger import get_logger
+
+logger = get_logger(__name__)
 
 def get_root():
     try:
@@ -22,13 +25,13 @@ def execute_sql_file(conn, filepath):
         cur.execute(sql)
         # Print any notices PostgreSQL sent during execution
         if conn.notices:
-            print("PostgreSQL notices:")
+            logger.info("PostgreSQL notices:")
             for notice in conn.notices:
-                print(notice.strip())
+                logger.info(notice.strip())
             # Clear notices after printing so they don't repeat
             conn.notices.clear()
     conn.commit()
-    print(f"{filepath} executed.")
+    logger.info(f"{filepath} executed.")
 
 
 def main():
@@ -45,9 +48,9 @@ def main():
             host=os.getenv("DB_HOST", "localhost"),
             port=os.getenv("DB_PORT", "5432")
         )
-        print("Connection to the database was successful.")
+        logger.info("Connection to the database was successful.")
     except Exception as err:
-        print(f"Failed to connect to the database: {err}")
+        logger.error(f"Failed to connect to the database: {err}")
         exit(1)
 
     try:
