@@ -110,111 +110,119 @@ def have_played_before(head_to_head_map, player1_id, player2_id):
 
 
 def swiss_pairing(conn, players):
-    paired_players_set = set()
-    pairing_list = [] 
+    """
+    Generate Swiss-style tournament pairings.
 
-    H2H_map = create_head_to_head_map(conn)
+    The Swiss pairing algorithm:
+    1. Avoids pairing players who have already played each other.
+    2. Pairs players close in ranking order.
+    3. Handles BYE players first (those resting or absent).
+    4. Tries to fix conflicts by swapping opponents if necessary.
+    5. Assigns a 'BYE' if no valid opponent is available.
 
-    # Pair already rested players from the bottom going upwards
+    Args:
+        conn: Database connection (used for head-to-head history).
+        players (list): List of player objects with attributes:
+                        - id
+                        - name
+                        - is_bye (bool)
+
+    Returns:
+        list of tuples: Each tuple contains (playerA, playerB) or (player, 'BYE').
+
+    Algorithm Complexity:
+        Time Complexity:
+            O(n²) —
+                The algorithm may compare each player with all others
+                to ensure no repeated matchups, and can backtrack or
+                swap pairings in conflict cases. This quadratic growth
+                is typical for Swiss pairing algorithms of moderate player counts.
+
+        Space Complexity:
+            O(n + m) —
+                - O(n) for tracking paired players and pairings.
+                - O(m) for the head-to-head map (where m is the number of past matches).
+                Total space remains linear with respect to the number of players
+                and previously recorded results.
+    """
+    head_to_head_map = create_head_to_head_map(conn)
+    paired_players = set()
+    pairings = []
+
+    # Handle BYE players (rested players) firs
     for i in range(len(players) - 1, -1, -1):
-        player_id = players[i].id
-        name = players[i].name
-        is_bye = players[i].is_bye
-        
-        if is_bye and player_id not in paired_players_set:
-            left_hand_player = player_id
-            paired_players_set.add(left_hand_player)
-            
+        player = players[i]
+        if player.is_bye and player.id not in paired_players:
+            left_player = player
+            paired_players.add(player.id)
+
+            # Try to pair BYE player with someone above in rankings
             for j in range(i - 1, -1, -1):
-                opponent_id = players[j].id
-                opponent_name = players[j].name
-                is_opponent_bye = players[j].is_bye
-                
-                if not is_opponent_bye and opponent_id not in paired_players_set and \
-                    not have_played_before(H2H_map, left_hand_player, opponent_id):
-                    right_hand_player = opponent_id
-                    paired_players_set.add(right_hand_player)
-                    pairing_list.append((players[i], players[j]))
-                    # print(f"{left_hand_player} {name} - {opponent_name} {right_hand_player}")
+                opponent = players[j]
+                if not opponent.is_bye and opponent.id not in paired_players and \
+                   not have_played_before(head_to_head_map, left_player.id, opponent.id):
+                    pairings.append((left_player, opponent))
+                    paired_players.add(opponent.id)
+                    logger.debug(f"{left_player.id} {left_player.name} - {opponent.name} {opponent.id}")
                     break
-
-            # If no player found, pair going downwards the table
             else:
+                # No valid opponent found upwards, try downwards
                 for j in range(i, len(players)):
-                    opponent_id = players[j].id
-                    opp_name = players[j].name
-                    is_opponent_bye = players[j].is_bye
-                    
-                    if not is_opponent_bye and opponent_id not in paired_players_set and \
-                        not have_played_before(H2H_map, left_hand_player, opponent_id):
-                        right_hand_player = opponent_id
-                        paired_players_set.add(right_hand_player)
-                        pairing_list.append((players[i], players[j]))
-                        # print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
+                    opponent = players[j]
+                    if not opponent.is_bye and opponent.id not in paired_players and \
+                       not have_played_before(head_to_head_map, left_player.id, opponent.id):
+                        pairings.append((left_player, opponent))
+                        paired_players.add(opponent.id)
+                        logger.debug(f"{left_player.id} {left_player.name} - {opponent.name} {opponent.id}")
                         break
 
-    # Pair leading players from up to bottom (by ranking)
-    for i in range(len(players)):
-        player_id = players[i].id
-        name = players[i].name
-        is_bye = players[i].is_bye
+    # Pair remaining active players from top to bottom
+    for i, left_player in enumerate(players):
+        if left_player.id in paired_players:
+            continue
 
-        if player_id not in paired_players_set:
-            left_hand_player = player_id
-            paired_players_set.add(left_hand_player)
+        paired_players.add(left_player.id)
 
-            for j in range(i, len(players)):
-                opponent_id = players[j].id
-                opp_name = players[j].name
-                is_opponent_bye = players[j].is_bye
+        for j, right_player in enumerate(players[i:], start=i):
+            if right_player.id in paired_players:
+                continue
 
-                if opponent_id not in paired_players_set:
-
-                    right_hand_player = opponent_id
-
-                    if not have_played_before(H2H_map, left_hand_player, right_hand_player):
-                        paired_players_set.add(right_hand_player)
-                        pairing_list.append((players[i], players[j]))
-                        # print(f"{left_hand_player} {name} - {opp_name} {right_hand_player}")
-                        break
-                    
-                    # continue iteration unless it reached to the end of the standings
-                    elif j < len(players) - 1:
-                        continue
-
-
-                    # If about to match players matched before
-                    # Iterate over the list(from end to front of list)
-                    # From matched players seek for a player which not faced left_hand_player
-                    # switch mutual opponents of players if they haven't played before.
-                    else:
-
-                        for ind in range(len(pairing_list) - 1, -1, -1):
-                            # id1, id2 = pairing_list[ind]
-                            player1, player2 = pairing_list[ind]
-                            id1, id2 = player1.id, player2.id
-                            
-                            if not have_played_before(H2H_map, left_hand_player, id2) and \
-                                not have_played_before(H2H_map, id1, right_hand_player):
-                                pairing_list[ind] = (player1, players[j])
-                                # print(f"change {id1} - {right_hand_player}")
-                                pairing_list.append((players[i], player2))
-                                paired_players_set.add(right_hand_player)
-                                break
-                            
-                            elif not have_played_before(H2H_map, left_hand_player, id1) and \
-                                not have_played_before(H2H_map, right_hand_player, id2):
-                                pairing_list[ind] = (player1, players[i])
-                                # print(f"change {id1} - {left_hand_player}")
-                                pairing_list.append((players[j], player2))
-                                paired_players_set.add(right_hand_player)
-                                break                     
-            else:
-                # print(f"{left_hand_player} {name} - BYE")
-                pairing_list.append((players[i], 'BYE'))
+            # Case: They haven't played before — simple pairing
+            if not have_played_before(head_to_head_map, left_player.id, right_player.id):
+                pairings.append((left_player, right_player))
+                paired_players.add(right_player.id)
+                logger.debug(f"{left_player.id} {left_player.name} - {right_player.name} {right_player.id}")
                 break
 
-    return pairing_list
+            # Case: All possible opponents already played — try reshuffling
+            if j == len(players) - 1:
+                for k in range(len(pairings) - 1, -1, -1):
+                    player1, player2 = pairings[k]
+                    id1, id2 = player1.id, player2.id
+
+                    # Try swapping with pair (player1, player2)
+                    if not have_played_before(head_to_head_map, left_player.id, id2) and \
+                    not have_played_before(head_to_head_map, id1, right_player.id):
+                        pairings[k] = (player1, right_player)
+                        pairings.append((left_player, player2))
+                        paired_players.add(right_player.id)
+                        logger.debug(f"Swap pairing: {id1}-{right_player.id}, {left_player.id}-{player2.id}")
+                        break
+
+                    elif not have_played_before(head_to_head_map, left_player.id, id1) and \
+                        not have_played_before(head_to_head_map, right_player.id, id2):
+                        pairings[k] = (player1, left_player)
+                        pairings.append((right_player, player2))
+                        paired_players.add(right_player.id)
+                        logger.debug(f"Swap pairing: {id1}-{left_player.id}, {right_player.id}-{player2.id}")
+                        break
+                else:
+                    # No possible swap -> assign a BYE
+                    pairings.append((left_player, 'BYE'))
+                    logger.debug(f"{left_player.id} {left_player.name} - BYE")
+                    break
+
+    return pairings
 
 def root_dir():
     try:
