@@ -29,10 +29,12 @@ def check_inputs(conn, round_id, player1_id, player1_name, player2_name, player2
         if not cur.fetchone():
             raise ValueError(f"Player mismatch: {player1_id} - {player1_name} not found in standings.")
 
-        cur.execute("SELECT 1 FROM standings WHERE id = %s AND name = %s;",
-                    (player2_id, player2_name))
-        if not cur.fetchone():
-            raise ValueError(f"Player mismatch: {player2_id} - {player2_name} not found in standings.")
+        # If the player1 was set to bye, naturally bypass empty player2 attributes
+        if not (player2_name == None and player2_id == None):
+            cur.execute("SELECT 1 FROM standings WHERE id = %s AND name = %s;",
+                        (player2_id, player2_name))
+            if not cur.fetchone():
+                raise ValueError(f"Player mismatch: {player2_id} - {player2_name} not found in standings.")
 
         if round_id != max_round_id + 1:
             raise ValueError(
@@ -59,7 +61,7 @@ def store_results(input_file, conn):
                 # As there are no matches he gets auto Win a.k.a 1.0 points
                 if player1_score == 'BYE':
                     player1_score = 1.0
-                    player2_score, player2_name, player2_id = '0.0', '_', '_'
+                    player2_score, player2_name, player2_id = '0.0', None, None
                 else:
                     row_output = ','.join([str(round_id), player1_id, player1_name, player1_score, player2_score, player2_name, player2_id])
                     try:

@@ -49,12 +49,18 @@ def print_players(conn):
 
 def print_results(conn):
     cur = conn.cursor()
-    cur.execute("SELECT round_id, player1_name, player1_score, player2_score, player2_name FROM results")
+    cur.execute("""
+        SELECT round_id, player1_name, player1_score, player2_score, player2_name
+        FROM results
+        ORDER BY round_id;
+    """)
     rows = cur.fetchall()
-    print("{:<9} | {:<21} | {:<13} | {:<13} | {:<21}".format("round_id", "player1_name", "player1_score", "player2_score", "player2_name"))
+    print("{:<9} | {:<21} | {:<13} | {:<13} | {:<21}".format(
+        "round_id", "player1_name", "player1_score", "player2_score", "player2_name"))
     print("-" * 100)
     for row in rows:
-        print("{:<9} | {:<21} | {:<13} | {:<13} | {:<21}".format(row[0], row[1], row[2], row[3], row[4]))
+        safe_row = tuple("" if value is None else value for value in row)
+        print("{:<9} | {:<21} | {:<13} | {:<13} | {:<21}".format(*safe_row))
     print()
 
 
