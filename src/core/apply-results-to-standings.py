@@ -41,7 +41,7 @@ def apply_scores_to_standings(conn, round_id):
                 cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player1_score, player1_id))
 
                 # Check if player2_id are empty
-                if player2_id != '_':
+                if player2_id != None:
                     # Update player2's score in standings table
                     cur.execute("UPDATE standings SET points = points + %s WHERE id = %s", (player2_score, player2_id))
                 else:
