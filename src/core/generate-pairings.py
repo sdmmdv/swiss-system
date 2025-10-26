@@ -188,7 +188,6 @@ def swiss_pairing(conn, players):
             continue
 
         paired_players.add(left_player.id)
-        paired = False  # Track if we found a valid opponent
 
         for j, right_player in enumerate(players[i:], start=i):
             if right_player.id in paired_players:
@@ -198,7 +197,6 @@ def swiss_pairing(conn, players):
             if not have_played_before(head_to_head_map, left_player.id, right_player.id):
                 pairings.append((left_player, right_player))
                 paired_players.add(right_player.id)
-                paired = True
                 logger.debug(f"{left_player.id} {left_player.name} - {right_player.name} {right_player.id}")
                 break
 
@@ -214,7 +212,6 @@ def swiss_pairing(conn, players):
                         pairings[k] = (player1, right_player)
                         pairings.append((left_player, player2))
                         paired_players.add(right_player.id)
-                        paired = True
                         logger.debug(f"Swap pairing: {id1}-{right_player.id}, {left_player.id}-{player2.id}")
                         break
 
@@ -223,14 +220,8 @@ def swiss_pairing(conn, players):
                         pairings[k] = (player1, left_player)
                         pairings.append((right_player, player2))
                         paired_players.add(right_player.id)
-                        paired = True
                         logger.debug(f"Swap pairing: {id1}-{left_player.id}, {right_player.id}-{player2.id}")
                         break
-        # If no pairing found at all — assign BYE
-        if not paired:
-            pairings.append((left_player, 'BYE'))
-            logger.debug(f"{left_player.id} {left_player.name} - BYE")
-            break
 
     return pairings
 
