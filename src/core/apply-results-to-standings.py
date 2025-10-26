@@ -59,69 +59,63 @@ def apply_scores_to_standings(conn, round_id):
 
 
 def apply_buchholz_tiebreak(conn):
+    """
+    Calculate and apply Buchholz tie-breaker (sum of opponents' total points).
+    Excludes BYE matches and ensures no duplicates.
+    """
     try:
-        # Retrieve the list of players from the standings table
         with conn.cursor() as cur:
+            # Get all players
             cur.execute("SELECT id, name FROM standings")
             players = cur.fetchall()
-            # print(players)
 
-            # Get average points of all players
-            # cur.execute("SELECT AVG(points) AS average_points FROM standings")
-            # result = cur.fetchone()
-            # average_points = format(result[0], '.2f')
-
-            # Update the Buchholz tie-breaker for each player
-            for player in players:
-                player_id = player[0]
-                player_name = player[1]
+            for player_id, player_name in players:
+                # Get valid opponents (exclude BYE)
                 cur.execute("""
                     SELECT DISTINCT
-                        CASE 
+                        CASE
                             WHEN player1_id = %s THEN player2_id
                             WHEN player2_id = %s THEN player1_id
-                        END AS opponent_id,
-                        CASE
-                            WHEN player1_id = %s THEN player2_score
-                            WHEN player2_id = %s THEN player1_score
-                        END AS opponent_score
+                        END AS opponent_id
                     FROM results
-                    WHERE player1_id = %s OR player2_id = %s;
-                """, ([player_id] * 6))
+                    WHERE (player1_id = %s OR player2_id = %s)
+                      AND (player1_id IS NOT NULL AND player2_id IS NOT NULL)
+                      AND (
+                        CASE
+                            WHEN player1_id = %s THEN player2_id
+                            WHEN player2_id = %s THEN player1_id
+                        END
+                      ) IS NOT NULL;
+                """, [player_id] * 6)
 
-                # Fetch all the opponent results
-                opponent_data = cur.fetchall()
+                opponent_ids = [row[0] for row in cur.fetchall() if row[0] is not None]
 
-                opponent_ids = [result[0] for result in opponent_data]
-                # print(opponent_ids)
+                if not opponent_ids:
+                    buchholz_score_sum = 0
+                else:
+                    cur.execute("""
+                        SELECT COALESCE(SUM(points), 0)
+                        FROM standings
+                        WHERE id = ANY(%s);
+                    """, (opponent_ids,))
+                    buchholz_score_sum = cur.fetchone()[0]
 
                 cur.execute("""
-                    SELECT COALESCE(SUM(points), 0) FROM standings WHERE id = ANY(%s);
-                """, (opponent_ids,))
+                    UPDATE standings
+                    SET tiebreaker_a = %s
+                    WHERE id = %s;
+                """, (buchholz_score_sum, player_id))
 
-                buchholz_score_sum = cur.fetchone()[0]
+                logger.debug(f"Buchholz updated: {player_name} ({player_id}) = {buchholz_score_sum}")
 
-                # print(player_id, player_name, opponent_data, buchholz_score_sum)
-
-                # opponent_ids = [result[0] for result in opponent_data]
-                # opponent_points = [result[1] for result in opponent_data]
-                # buchholz_score_sum = sum(points for _, points in opponent_data)
-                # print(player_id, player_name, opponent_data, buchholz_score_sum)
-
-                try:
-                    cur.execute("UPDATE standings SET tiebreaker_a = %s WHERE id = %s", (buchholz_score_sum, player_id))
-                except psycopg2.Error as e:
-                    conn.rollback()
-                    logger.error(f"Error: {str(e)}")
-                    sys.exit(1)
-            # Commit the changes to the database
             conn.commit()
-            logger.info("Buchholz applied successfully")
+            logger.info("Buchholz tie-breaker recalculated successfully.")
 
     except psycopg2.Error as e:
         conn.rollback()
-        logger.error(f"Error: {str(e)}")
-        sys.exit(1)
+        logger.error(f"Error in Buchholz computation: {e}")
+        raise
+
 
 if __name__ == '__main__':    
     conn_string = get_connection_string()
