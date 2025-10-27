@@ -26,9 +26,9 @@ CREATE TABLE Standings (
     is_active BOOLEAN,
     is_bye BOOLEAN,
     matches INTEGER NOT NULL,
-    tiebreaker_C DECIMAL(4,2),
-    tiebreaker_B DECIMAL(4,2),
-    tiebreaker_A DECIMAL(4,2),
+    tiebreaker_C DECIMAL(8,2),
+    tiebreaker_B DECIMAL(8,2),
+    tiebreaker_A DECIMAL(8,2),
     points DECIMAL(4,1),
     PRIMARY KEY (id)
 );
