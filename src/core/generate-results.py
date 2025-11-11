@@ -7,13 +7,7 @@ import subprocess
 
 from common.db_utils import get_connection_string
 
-def root_dir():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
+from common.common import root_dir
 
 def read_players(file_path):
     players = []
@@ -61,7 +55,7 @@ def write_results(file_path, pairings, round_num):
                 'player2_id': pairing['player2_id']
             })
 def main():
-    players_path = root_dir() / 'data/players.csv'
+    players_path = root_dir(__file__) / 'data/players.csv'
 
     # Read players from players.csv
     players = read_players(players_path)
@@ -70,7 +64,7 @@ def main():
     pairings = generate_pairings(players)
 
     # Write pairings to results.csv for round 1
-    results_path = root_dir() / 'data/results.csv'
+    results_path = root_dir(__file__) / 'data/results.csv'
 
     write_results(results_path, pairings, 1)
 

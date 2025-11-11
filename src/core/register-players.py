@@ -9,16 +9,9 @@ import os
 
 from common.db_utils import get_connection_string
 from common.logger import get_logger
+from common.common import root_dir
 
 logger = get_logger(__name__)
-
-def root_dir():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
 
 def register_players(conn, csv_file):
     try:
@@ -49,7 +42,7 @@ if __name__ == '__main__':
                         default=conn_string)
     parser.add_argument('--csv-file',
                         help='CSV file containing player data',
-                        default=os.path.join(root_dir(), 'data/players.csv'))
+                        default=os.path.join(root_dir(__file__), 'data/players.csv'))
     args = parser.parse_args()
 
     # Connect to the database

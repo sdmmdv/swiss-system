@@ -8,20 +8,11 @@ import os
 import argparse
 
 from common.logger import get_logger
+from common.common import root_dir
 
 logger = get_logger(__name__)
 
 fake = Faker()
-
-
-def root_dir():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
-
 
 def generate_fake_players(num_players):
     """
@@ -94,7 +85,7 @@ def main():
 
     players = generate_fake_players(num_players)
 
-    data_dir = Path(root_dir()) / 'data'
+    data_dir = Path(root_dir(__file__)) / 'data'
     output_file = data_dir / 'players.csv'
 
     write_players_to_csv(players, output_file)

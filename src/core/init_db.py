@@ -6,16 +6,9 @@ import subprocess
 
 from common.db_utils import get_connection_string
 from common.logger import get_logger
+from common.common import root_dir
 
 logger = get_logger(__name__)
-
-def get_root():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
 
 
 def execute_sql_file(conn, filepath):
@@ -37,7 +30,8 @@ def execute_sql_file(conn, filepath):
 def main():
 
 
-    db_path = os.path.join(get_root(), 'db')
+    db_path = os.path.join(root_dir(__file__), 'db')
+    print(db_path)
 
     # Connect to new DB as admin
     try:

@@ -11,6 +11,7 @@ import math
 from player import Player
 from common.db_utils import get_connection_string
 from common.logger import get_logger
+from common.common import root_dir
 
 logger = get_logger(__name__)
 
@@ -79,13 +80,6 @@ def round_robin_pairing(players):
 
     return rounds
 
-def root_dir():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
 
 # Get eligible list of players in order of rankings to pair for the next round
 def get_active_players(conn):
@@ -114,8 +108,8 @@ def roundrobin_round_count(num_players: int) -> int:
 
 
 def generate_pairings_csv(sorted_pairs, round_id):
-    filename = os.path.join(root_dir(), 'data', f'pairings_r{round_id}.csv')
-    filename_display = os.path.join(root_dir(), 'data', 'pairings-display.txt')
+    filename = os.path.join(root_dir(__file__), 'data', f'pairings_r{round_id}.csv')
+    filename_display = os.path.join(root_dir(__file__), 'data', 'pairings-display.txt')
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)  # ensure data/ dir exists
 

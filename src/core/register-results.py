@@ -9,11 +9,10 @@ import sys
 
 from common.db_utils import get_connection_string
 from common.logger import get_logger
+from common.common import root_dir
 
 logger = get_logger(__name__)
 
-def root_dir() -> Path:
-    return Path(__file__).resolve().parent.parent
 
 def get_max_round_id(conn) -> int:
     """Return the maximum round_id from results table (0 if empty)."""

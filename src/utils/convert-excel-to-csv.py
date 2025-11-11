@@ -6,13 +6,7 @@ import subprocess
 import argparse
 import os
 
-def root_dir():
-    try:
-        root = subprocess.check_output(['git', 'rev-parse',
-                                       '--show-toplevel'], stderr=subprocess.DEVNULL)
-        return root.decode('utf-8').strip()
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Must be running inside git repository!")
+from common.common import root_dir
 
 
 def convert_to_csv(input_file, output_file):
@@ -26,10 +20,10 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--input',
-                        default=os.path.join(root_dir(), 'data/input.xlsx'),
+                        default=os.path.join(root_dir(__file__), 'data/input.xlsx'),
                         help=f'Input Excel file (default: %(default)s)')
     parser.add_argument('--output',
-                        default=os.path.join(root_dir(), 'data/output.csv'),
+                        default=os.path.join(root_dir(__file__), 'data/output.csv'),
                         help=f'Output CSV file (default: %(default)s)')
     args = parser.parse_args()
 
