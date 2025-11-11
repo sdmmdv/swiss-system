@@ -15,7 +15,7 @@ if [ -z "$ROUND_ID" ]; then
 fi
 
 # Generate pairings for the given round
-./main.py generate-pairings -r "$ROUND_ID" -t "roundrobin"
+./main.py generate-swiss-pairings -r "$ROUND_ID" --verbose
 
 # Populate results using generated pairings file
 ./main.py populate-results -f "../data/pairings_r${ROUND_ID}.csv"
@@ -25,6 +25,9 @@ fi
 
 # Apply results (update standings)
 ./main.py apply-results -r "$ROUND_ID"
+
+# Print the results table
+./main.py print-table -t results
 
 # Print the standings table
 ./main.py print-table -t standings

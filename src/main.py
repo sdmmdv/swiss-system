@@ -54,10 +54,11 @@ def main():
     subparsers.add_parser("generate-players", help="Generate list of players")
     subparsers.add_parser("register-players", help="Register players into the database")
 
-    p = subparsers.add_parser("generate-pairings", help="Generate match pairings")
+    p = subparsers.add_parser("generate-swiss-pairings", help="Generate swiss match pairings")
     p.add_argument("-r", "--round-id", required=True, help="Round ID")
-    p.add_argument("-t", "--type", choices=["roundrobin", "swiss"], default="swiss", help="Pairing type")
 
+    p = subparsers.add_parser("generate-roundrobin-pairings", help="Generate round-robin match pairings")
+    
     subparsers.add_parser("register-standings", help="Register tournament standings")
 
     p = subparsers.add_parser("populate-results", help="Populate results from a file")
@@ -106,8 +107,11 @@ def main():
         elif cmd == "register-players":
             run_script("core/register-players.py", *unknown)
 
-        elif cmd == "generate-pairings":
-            run_script("core/generate-pairings.py", "-r", args.round_id, "-t", args.type, *unknown)
+        elif cmd == "generate-roundrobin-pairings":
+            run_script("core/generate-roundrobin-pairings.py", *unknown)
+
+        elif cmd == "generate-swiss-pairings":
+            run_script("core/generate-swiss-pairings.py", "-r", args.round_id, *unknown)
 
         elif cmd == "register-standings":
             run_script("core/register-standings.py", *unknown)

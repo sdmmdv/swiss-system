@@ -27,7 +27,7 @@ def get_active_players(conn):
     players = [Player(rank + 1, *data) for rank, data in enumerate(player_data)]
     return players
 
-def validate_new_round(conn, tourney_type, max_round_count, round_id: int):
+def validate_new_round(conn, max_round_count, round_id: int):
     """
     Validate that the given round_id is valid:
     - Cannot be less than maximum set by tournament type.
@@ -37,12 +37,12 @@ def validate_new_round(conn, tourney_type, max_round_count, round_id: int):
     if max_round_count == 0:
         raise ValueError(
             f"No players are registered in the standings table. "
-            f"Cannot start or validate round {round_id} for {tourney_type} tournament."
+            f"Cannot start or validate round {round_id} for swiss tournament."
         )
 
     if round_id > max_round_count:
         raise ValueError(
-            f"Invalid round {round_id}! {tourney_type} tournament is limited to maximum {max_round_count} rounds ."
+            f"Invalid round {round_id}! swiss tournament is limited to maximum {max_round_count} rounds ."
         )
  
     with conn.cursor() as cur:
@@ -234,6 +234,72 @@ def swiss_pairing(conn, players):
 
     return pairings
 
+def round_robin_pairing(players):
+    """
+    Generate all round-robin pairings for a list of active player objects.
+
+    Each player faces every other player exactly once.
+    If there is an odd number of players, one receives a BYE each round.
+
+    Args:
+        players (list): List of player objects with at least attributes:
+                        - id
+                        - name
+                        - rank (optional, used for sorting/logging)
+
+    Returns:
+        list[list[tuple]]: A list of rounds,
+                           where each round is a list of (playerA, playerB) tuples.
+                           A BYE is represented as (player, 'BYE').
+
+    Algorithm:
+        - Implements the "circle method" for round-robin scheduling.
+        - Ensures each player plays every other exactly once.
+        - BYE pairings appear only if the player count is odd.
+
+    Complexity:
+        Time  : O(n²)
+        Space : O(n²)
+    """
+
+    players = players[:]  # Copy list to avoid mutation
+    n = len(players)
+    has_bye = False
+
+    # Handle odd number of players
+    if n % 2 == 1:
+        has_bye = True
+        n += 1
+
+    rounds = []
+    for round_index in range(n - 1):
+        round_pairs = []
+
+        for i in range(n // 2):
+            if has_bye and (i == 0 and round_index % n < len(players)):
+                # Give BYE to one player each round in rotation
+                bye_player = players[(round_index + i) % len(players)]
+                round_pairs.append((bye_player, 'BYE'))
+                continue
+
+            # Determine real matchups
+            p1_index = (round_index + i) % len(players)
+            p2_index = (round_index + n - 1 - i) % len(players)
+
+            if p1_index == p2_index:
+                continue  # skip self-match in odd count
+
+            p1 = players[p1_index]
+            p2 = players[p2_index]
+            if p1 != p2:
+                round_pairs.append((p1, p2))
+
+        rounds.append(round_pairs)
+
+    return rounds
+
+
+
 def root_dir():
     try:
         root = subprocess.check_output(['git', 'rev-parse',
@@ -278,22 +344,28 @@ def get_player_count(conn) -> int:
     return num_players
 
 
-def get_max_rounds(num_players: int, system: str = "swiss") -> int:
+def swiss_round_count(num_players: int, round_id: int) -> int:
     """
-    Calculate maximum number of rounds for a tournament.
-    
-    system = "swiss"  → ceil(log2(N))
-    system = "roundrobin" → N - 1
+    Determine number of rounds for Swiss system.
+
+    Rules:
+    - Recommended: ceil(log2(num_players))
+    - Max allowed: N/2 (even), (N-1)/2 (odd)
+    - Logs a warning if exceeding recommended rounds, but does not raise.
     """
     if num_players < 2:
-        return 0
+        raise ValueError("Need at least 2 players for a tournament")
 
-    if system == "roundrobin":
-        return num_players - 1
-    elif system == "swiss":
-        return math.ceil(math.log2(num_players))
-    else:
-        raise ValueError("Unknown system: choose 'swiss' or 'roundrobin'")
+    recommended = math.ceil(math.log2(num_players))
+    max_rounds = num_players // 2 if num_players % 2 == 0 else (num_players - 1) // 2
+
+    if round_id > recommended:
+        logger.warning(
+            f"[Swiss pairing] Recommended rounds ≈ {recommended} "
+            f"(based on log2({num_players})), but using up to {max_rounds} is acceptable."
+        )
+
+    return max_rounds
 
 
 if __name__ == '__main__':
@@ -301,7 +373,7 @@ if __name__ == '__main__':
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conn', 
+    parser.add_argument('--conn',
                         help='PostgreSQL connection string',
                         default=conn_string)
     parser.add_argument("-r",
@@ -309,24 +381,19 @@ if __name__ == '__main__':
                         type=int,
                         required=True,
                         help="Round ID")
-    parser.add_argument("-t", "--type",
-                        type=str,
-                        choices=["roundrobin", "swiss"],
-                        default="roundrobin",
-                        help="Tournament type (default: roundrobin)"
-    )
     args = parser.parse_args()
 
     # Connect to the database
     conn = psycopg2.connect(args.conn)
-
-    player_count = get_player_count(conn)
-
-    max_rounds = get_max_rounds(player_count, args.type)
-
-    validate_new_round(conn, args.type, max_rounds, args.round_id)
-
+    
     active_players = get_active_players(conn)
+
+    # player_count = get_player_count(conn)
+
+    max_rounds = swiss_round_count(len(active_players), args.round_id)
+
+    validate_new_round(conn, max_rounds, args.round_id)
+
     # [print(player) for player in active_players]
 
     raw_pairs = swiss_pairing(conn, active_players)
@@ -336,7 +403,7 @@ if __name__ == '__main__':
 
     # [print(f'{pair[0]} - {pair[1]}') for pair in raw_pairs]
 
-    generate_pairings_csv(sorted_pairs, args.round_id)
+    generate_pairings_csv(sorted_pairs, args.round_id)   
 
     # Close database connection
     conn.close()
