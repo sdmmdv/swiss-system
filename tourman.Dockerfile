@@ -5,13 +5,13 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# COPY requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy your source code
-COPY src/ ./src
-COPY db/ ./db
-COPY tests/ ./tests
+COPY . .
+
+RUN pip install .
 
 # Set PYTHONPATH for imports
 ENV PYTHONPATH=/app/src
