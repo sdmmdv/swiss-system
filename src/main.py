@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Swiss System Tournament Central CLI
+Tournament Manager Central CLI
 -----------------------------------
 This script acts as a unified command-line interface for managing
 all tournament operations such as initializing the database,

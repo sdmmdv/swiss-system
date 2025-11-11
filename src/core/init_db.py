@@ -42,7 +42,7 @@ def main():
     # Connect to new DB as admin
     try:
         conn = psycopg2.connect(
-            dbname=os.getenv("DB_NAME", "swiss_tournament"),
+            dbname=os.getenv("DB_NAME", "tournament"),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASS"),
             host=os.getenv("DB_HOST", "localhost"),
