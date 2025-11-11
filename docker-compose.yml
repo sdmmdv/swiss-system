@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: tourman_db
+    environment:
+      POSTGRES_USER: app_admin
+      POSTGRES_PASSWORD: admin_secure_pass
+      POSTGRES_DB: tournament
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: tourman.Dockerfile
+    container_name: tourman_app
+    environment:
+      DB_USER: app_admin
+      DB_PASS: admin_secure_pass
+      DB_NAME: tournament
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+    command: ["tail", "-f", "/dev/null"]
+    ports:
+      - "8000:8000"
+
+  # tests:
+  #   build:
+  #     context: .
+  #     dockerfile: tourman.Dockerfile
+  #   command: ["pytest", "tests"]
+  #   depends_on:
+  #     - db
+
+volumes:
+  pgdata:
